@@ -2,8 +2,8 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>翻牌消消乐 - 三关模式</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>翻牌消消乐 - 适配16:9手机端</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,29 +14,27 @@
       height: 100vh;
       background-color: #f0f0f0;
       margin: 0;
+      overflow: hidden;
     }
     .game-container {
+      width: 90vw;
+      max-width: 500px;
       text-align: center;
-    }
-    .button {
-      padding: 10px 15px;
-      font-size: 18px;
-      cursor: pointer;
-      margin: 10px;
-      display: none;
     }
     .card-grid {
       display: grid;
-      gap: 10px;
+      gap: 5px;
       margin: 20px auto;
       justify-content: center;
+      width: 100%;
     }
     .card {
-      width: 80px;
-      height: 80px;
+      width: 20vw;
+      height: 20vw;
+      max-width: 80px;
+      max-height: 80px;
       perspective: 1000px;
       cursor: pointer;
-      position: relative;
     }
     .card.blank {
       visibility: hidden;
@@ -45,14 +43,19 @@
     .card-inner {
       width: 100%;
       height: 100%;
+      position: relative;
       transform-style: preserve-3d;
-      transition: transform 0.5s ease-in-out;
+      transition: transform 0.3s ease-in-out;
     }
     .card.flipped .card-inner {
       transform: rotateY(180deg);
     }
+    .card.matched {
+      cursor: default;
+    }
     .card.matched .card-inner {
       transform: rotateY(180deg);
+      opacity: 0.7;
       pointer-events: none;
     }
     .card-face {
@@ -60,11 +63,11 @@
       height: 100%;
       position: absolute;
       backface-visibility: hidden;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       display: flex;
       justify-content: center;
       align-items: center;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     .card-front {
       background-color: #fff;
@@ -79,252 +82,141 @@
     .card-back {
       background-color: #4CAF50;
     }
-    .hidden {
+    .button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 5px;
+    }
+    .button.hidden {
       display: none;
     }
     .game-info {
+      font-size: 16px;
       margin-top: 10px;
+    }
+    #timer {
+      position: absolute;
+      top: 10px;
+      right: 10px;
       font-size: 18px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
+  <div id="timer">时间: 0 秒</div>
   <div class="game-container">
     <button class="button" id="startButton" onclick="startGame()">开始游戏</button>
     <button class="button" id="refreshButton" onclick="refreshImages()">刷新图片</button>
-    <button class="button" id="nextLevelButton" onclick="nextLevel()">下一关</button>
+    <button class="button hidden" id="nextLevelButton" onclick="nextLevel()">下一关</button>
     <div class="card-grid hidden" id="cardGrid"></div>
     <div class="game-info">
-      关卡: <span id="level">1</span> | 用时: <span id="timer">0.00</span> 秒
+      关卡: <span id="level">1</span>
     </div>
     <div id="winMessage" class="hidden">恭喜通关！</div>
   </div>
 
-  <audio id="matchSound">
-    <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
-  </audio>
-
   <script>
     const cardGrid = document.getElementById('cardGrid');
-    const winMessage = document.getElementById('winMessage');
-    const levelElement = document.getElementById('level');
     const timerElement = document.getElementById('timer');
+    const winMessage = document.getElementById('winMessage');
     const nextLevelButton = document.getElementById('nextLevelButton');
     const startButton = document.getElementById('startButton');
     const refreshButton = document.getElementById('refreshButton');
+    let refreshCount = 0;
+    let elapsedTime = 0;
+    let timerInterval;
 
-    // 默认占位图（用于图片加载失败）
-    const defaultImage = "https://via.placeholder.com/80?text=?";
-    // 图片数组（确保每张图片只出现一次）
     const images = [
-      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
-      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
-      'https://www.cmfish.com/kinds/fish_s/diao.jpg',
-      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg',
-      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg',
-      'https://www.cmfish.com/kinds/fish_s/lion.jpg',
-      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg',
-      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg',
-      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg',
-      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg',
-      'https://www.cmfish.com/kinds/fish_s/hailong.jpg',
-      'https://www.cmfish.com/kinds/fish_s/shark.jpg',
-      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg',
-      'https://www.cmfish.com/kinds/fish_s/leida.jpg',
-      'https://www.cmfish.com/kinds/fish_s/huli.jpg',
-      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg',
-      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg',
-      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg'
+      'https://via.placeholder.com/80?text=A',
+      'https://via.placeholder.com/80?text=B',
+      'https://via.placeholder.com/80?text=C',
+      'https://via.placeholder.com/80?text=D',
+      'https://via.placeholder.com/80?text=E',
+      'https://via.placeholder.com/80?text=F',
+      'https://via.placeholder.com/80?text=G',
+      'https://via.placeholder.com/80?text=H'
     ];
 
     let flippedCards = [];
     let matchedPairs = 0;
     let currentLevel = 1;
-    const maxLevel = 3;
-    let currentPairs = 0; // 当前关卡需要匹配的对数
+    let currentPairs = 0;
     let lockBoard = false;
-    let gameTimer = null;
-    let startTime = 0;
-
-    // 测试一键通关功能变量
-    let refreshClickCount = 0;
-    let refreshTimer = null;
-
-    // 缩短反应延迟为300毫秒
-    const flipDelay = 300;
 
     function startGame() {
-      // 隐藏开始和下一关按钮，显示刷新按钮
-      startButton.style.display = 'none';
-      nextLevelButton.style.display = 'none';
-      refreshButton.style.display = 'inline-block';
-      refreshClickCount = 0;
-      clearTimeout(refreshTimer);
-      
-      // 初始化计时器
-      clearInterval(gameTimer);
-      timerElement.textContent = "0.00";
-      startTime = Date.now();
-      
-      let gridSize, totalPairs;
-      if (currentLevel === 1) {
-        gridSize = 4;
-        totalPairs = 8;
-      } else if (currentLevel === 2) {
-        gridSize = 5;
-        totalPairs = 12;
-      } else {
-        gridSize = 6;
-        totalPairs = 18;
-      }
-      currentPairs = totalPairs;
-      
-      // 从图片数组中取前 totalPairs 张，制作匹配对
-      let selectedImages = images.slice(0, totalPairs);
-      let cardImages = [...selectedImages, ...selectedImages];
-      
-      // 第二关：在5×5网格中将中间位置（第三行第三列，index12）置为空白
-      if (currentLevel === 2) {
-        cardImages = shuffleArray(cardImages);
-        cardImages.splice(12, 0, null);
-      } else {
-        cardImages = shuffleArray(cardImages);
-      }
-      
+      startButton.classList.add('hidden');
+      nextLevelButton.classList.add('hidden');
+      refreshButton.classList.remove('hidden');
+      elapsedTime = 0;
+      updateTimer();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        elapsedTime++;
+        updateTimer();
+      }, 1000);
+
+      let gridSize = currentLevel === 1 ? 4 : 5;
+      currentPairs = gridSize * gridSize / 2;
+
+      let cardImages = [...images.slice(0, currentPairs), ...images.slice(0, currentPairs)];
+      if (currentLevel === 2) cardImages.splice(12, 0, null);
+      cardImages = shuffleArray(cardImages);
+
       cardGrid.innerHTML = '';
-      winMessage.classList.add('hidden');
       matchedPairs = 0;
       flippedCards = [];
       lockBoard = false;
-      
-      cardImages.forEach((imageUrl, index) => {
-        cardGrid.appendChild(createCard(imageUrl, index));
-      });
-      
-      cardGrid.style.gridTemplateColumns = `repeat(${gridSize}, 80px)`;
+      cardImages.forEach(imageUrl => cardGrid.appendChild(createCard(imageUrl)));
+      cardGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
       cardGrid.classList.remove('hidden');
-      
-      // 游戏开始前3秒，所有非空卡片翻开
-      document.querySelectorAll('.card:not(.blank)').forEach(card => card.classList.add('flipped'));
-      setTimeout(() => {
-        document.querySelectorAll('.card:not(.blank)').forEach(card => card.classList.remove('flipped'));
-        // 开始计时
-        startTime = Date.now();
-        gameTimer = setInterval(() => {
-          let elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-          timerElement.textContent = elapsed;
-        }, 10);
-      }, 3000);
     }
 
-    function createCard(imageUrl, index) {
+    function createCard(imageUrl) {
       const card = document.createElement('div');
       card.className = 'card';
-      if (imageUrl === null) {
+      if (!imageUrl) {
         card.classList.add('blank');
         return card;
       }
-      const img = new Image();
-      img.src = imageUrl;
-      img.onerror = () => img.src = defaultImage;
-      card.innerHTML = `
-        <div class="card-inner">
-          <div class="card-face card-front"></div>
-          <div class="card-face card-back"></div>
-        </div>
-      `;
-      card.querySelector('.card-front').appendChild(img);
+      card.innerHTML = `<div class="card-inner">
+        <div class="card-face card-front"><img src="${imageUrl}"></div>
+        <div class="card-face card-back"></div>
+      </div>`;
       card.addEventListener('click', () => handleCardClick(card, imageUrl));
       return card;
     }
 
     function handleCardClick(card, imageUrl) {
-      if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      if (lockBoard || card.classList.contains('matched')) return;
       card.classList.add('flipped');
       flippedCards.push({ card, imageUrl });
       if (flippedCards.length === 2) {
         lockBoard = true;
-        setTimeout(checkMatch, flipDelay);
+        setTimeout(checkMatch, 300);
       }
     }
 
-    function checkMatch() {
-      const [first, second] = flippedCards;
-      if (first.imageUrl === second.imageUrl) {
-        first.card.classList.add('matched');
-        second.card.classList.add('matched');
-        matchedPairs++;
-        playMatchSound();
-        if (matchedPairs === currentPairs) {
-          endGame();
-        }
-      } else {
-        first.card.classList.remove('flipped');
-        second.card.classList.remove('flipped');
-      }
-      flippedCards = [];
-      lockBoard = false;
-    }
-
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
+    function updateTimer() {
+      timerElement.innerText = `时间: ${elapsedTime} 秒`;
     }
 
     function refreshImages() {
-      // 刷新图片（重新加载每张卡片图片）
-      document.querySelectorAll('.card-front img').forEach(img => {
-        img.src = img.src;
-      });
-      // 记录连续点击次数，3秒内连续点击5次触发测试一键通关
-      refreshClickCount++;
-      clearTimeout(refreshTimer);
-      refreshTimer = setTimeout(() => {
-        refreshClickCount = 0;
-      }, 3000);
-      if (refreshClickCount >= 5) {
-        testComplete();
-        refreshClickCount = 0;
-      }
+      refreshCount++;
+      if (refreshCount >= 5) document.querySelectorAll('.card').forEach(card => card.classList.add('flipped'));
     }
 
-    // 测试人员一键通关：自动将所有非空卡牌翻开并标记为匹配
-    function testComplete() {
-      document.querySelectorAll('.card:not(.blank)').forEach(card => {
-        card.classList.add('flipped');
-        card.classList.add('matched');
-      });
-      matchedPairs = currentPairs;
-      endGame();
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
     }
-
-    function playMatchSound() {
-      const sound = document.getElementById('matchSound');
-      sound.currentTime = 0;
-      sound.play();
-    }
-
-    function endGame() {
-      clearInterval(gameTimer);
-      winMessage.classList.remove('hidden');
-      if (currentLevel < maxLevel) {
-        nextLevelButton.style.display = 'inline-block';
-      }
-    }
-
-    function nextLevel() {
-      currentLevel++;
-      levelElement.textContent = currentLevel;
-      startGame();
-    }
-
-    // 初始显示开始按钮和当前关卡与计时信息
-    startButton.style.display = 'inline-block';
-    levelElement.textContent = currentLevel;
-    timerElement.textContent = "0.00";
   </script>
 </body>
 </html>
