@@ -136,14 +136,24 @@
     let timerInterval;
 
     const images = [
-      'https://via.placeholder.com/80?text=A',
-      'https://via.placeholder.com/80?text=B',
-      'https://via.placeholder.com/80?text=C',
-      'https://via.placeholder.com/80?text=D',
-      'https://via.placeholder.com/80?text=E',
-      'https://via.placeholder.com/80?text=F',
-      'https://via.placeholder.com/80?text=G',
-      'https://via.placeholder.com/80?text=H'
+      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
+      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
+      'https://www.cmfish.com/kinds/fish_s/diao.jpg',
+      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg',
+      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg',
+      'https://www.cmfish.com/kinds/fish_s/lion.jpg',
+      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg',
+      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg',
+      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg',
+      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg',
+      'https://www.cmfish.com/kinds/fish_s/hailong.jpg',
+      'https://www.cmfish.com/kinds/fish_s/shark.jpg',
+      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg',
+      'https://www.cmfish.com/kinds/fish_s/leida.jpg',
+      'https://www.cmfish.com/kinds/fish_s/huli.jpg',
+      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg',
+      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg',
+      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg'
     ];
 
     let flippedCards = [];
@@ -196,13 +206,32 @@
     }
 
     function handleCardClick(card, imageUrl) {
-      if (lockBoard || card.classList.contains('matched')) return;
+      if (lockBoard || card.classList.contains('matched') || card.classList.contains('flipped')) return;
       card.classList.add('flipped');
       flippedCards.push({ card, imageUrl });
       if (flippedCards.length === 2) {
         lockBoard = true;
         setTimeout(checkMatch, 300);
       }
+    }
+
+    function checkMatch() {
+      const [firstCard, secondCard] = flippedCards;
+      if (firstCard.imageUrl === secondCard.imageUrl) {
+        firstCard.card.classList.add('matched');
+        secondCard.card.classList.add('matched');
+        matchedPairs++;
+        if (matchedPairs === currentPairs) {
+          winMessage.classList.remove('hidden');
+          nextLevelButton.classList.remove('hidden');
+          refreshButton.classList.add('hidden');
+        }
+      } else {
+        firstCard.card.classList.remove('flipped');
+        secondCard.card.classList.remove('flipped');
+      }
+      flippedCards = [];
+      lockBoard = false;
     }
 
     function updateTimer() {
@@ -212,6 +241,14 @@
     function refreshImages() {
       refreshCount++;
       if (refreshCount >= 5) document.querySelectorAll('.card').forEach(card => card.classList.add('flipped'));
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      document.getElementById('level').innerText = currentLevel;
+      startGame();
+      winMessage.classList.add('hidden');
+      nextLevelButton.classList.add('hidden');
     }
 
     function shuffleArray(array) {
