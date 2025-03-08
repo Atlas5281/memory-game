@@ -109,6 +109,11 @@
       padding: 5px 10px;
       border-radius: 5px;
     }
+    #version {
+      margin-top: 10px;
+      font-size: 14px;
+      color: gray;
+    }
   </style>
 </head>
 <body>
@@ -122,6 +127,7 @@
       关卡: <span id="level">1</span>
     </div>
     <div id="winMessage" class="hidden">恭喜通关！</div>
+    <div id="version">版本号：20250308-1</div>
   </div>
 
   <script>
@@ -159,12 +165,10 @@
     let flippedCards = [];
     let matchedPairs = 0;
     let currentLevel = 1;
-    let currentPairs = 0;
     let lockBoard = false;
 
     function startGame() {
       startButton.classList.add('hidden');
-      nextLevelButton.classList.add('hidden');
       refreshButton.classList.remove('hidden');
       elapsedTime = 0;
       updateTimer();
@@ -174,29 +178,32 @@
         updateTimer();
       }, 1000);
 
-      let gridSize = currentLevel === 1 ? 4 : 5;
-      currentPairs = gridSize * gridSize / 2;
-
-      let cardImages = [...images.slice(0, currentPairs), ...images.slice(0, currentPairs)];
-      if (currentLevel === 2) cardImages.splice(12, 0, null);
+      let cardImages = [...images.slice(0, 8), ...images.slice(0, 8)];
       cardImages = shuffleArray(cardImages);
 
       cardGrid.innerHTML = '';
       matchedPairs = 0;
       flippedCards = [];
-      lockBoard = false;
-      cardImages.forEach(imageUrl => cardGrid.appendChild(createCard(imageUrl)));
-      cardGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+      lockBoard = true;
+
+      cardImages.forEach(imageUrl => {
+        let card = createCard(imageUrl);
+        card.classList.add('flipped');
+        cardGrid.appendChild(card);
+      });
+
+      cardGrid.style.gridTemplateColumns = `repeat(4, 1fr)`;
       cardGrid.classList.remove('hidden');
+
+      setTimeout(() => {
+        document.querySelectorAll('.card').forEach(card => card.classList.remove('flipped'));
+        lockBoard = false;
+      }, 3000);
     }
 
     function createCard(imageUrl) {
       const card = document.createElement('div');
       card.className = 'card';
-      if (!imageUrl) {
-        card.classList.add('blank');
-        return card;
-      }
       card.innerHTML = `<div class="card-inner">
         <div class="card-face card-front"><img src="${imageUrl}"></div>
         <div class="card-face card-back"></div>
@@ -205,50 +212,8 @@
       return card;
     }
 
-    function handleCardClick(card, imageUrl) {
-      if (lockBoard || card.classList.contains('matched') || card.classList.contains('flipped')) return;
-      card.classList.add('flipped');
-      flippedCards.push({ card, imageUrl });
-      if (flippedCards.length === 2) {
-        lockBoard = true;
-        setTimeout(checkMatch, 300);
-      }
-    }
-
-    function checkMatch() {
-      const [firstCard, secondCard] = flippedCards;
-      if (firstCard.imageUrl === secondCard.imageUrl) {
-        firstCard.card.classList.add('matched');
-        secondCard.card.classList.add('matched');
-        matchedPairs++;
-        if (matchedPairs === currentPairs) {
-          winMessage.classList.remove('hidden');
-          nextLevelButton.classList.remove('hidden');
-          refreshButton.classList.add('hidden');
-        }
-      } else {
-        firstCard.card.classList.remove('flipped');
-        secondCard.card.classList.remove('flipped');
-      }
-      flippedCards = [];
-      lockBoard = false;
-    }
-
     function updateTimer() {
       timerElement.innerText = `时间: ${elapsedTime} 秒`;
-    }
-
-    function refreshImages() {
-      refreshCount++;
-      if (refreshCount >= 5) document.querySelectorAll('.card').forEach(card => card.classList.add('flipped'));
-    }
-
-    function nextLevel() {
-      currentLevel++;
-      document.getElementById('level').innerText = currentLevel;
-      startGame();
-      winMessage.classList.add('hidden');
-      nextLevelButton.classList.add('hidden');
     }
 
     function shuffleArray(array) {
