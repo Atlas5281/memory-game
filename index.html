@@ -1,65 +1,78 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>翻牌消消乐</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <title>翻牌消消乐 - 步数规则</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
     }
+
+    /* ========== 顶部导航栏 ========== */
     .top-bar {
       width: 100%;
       max-width: 500px;
       display: flex;
-      justify-content: space-between;
+      justify-content: center; /* 居中对齐 */
       align-items: center;
-      padding: 10px;
       background: #fff;
+      padding: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      gap: 20px; /* 图标之间的间距 */
     }
-    .version { font-size: 14px; color: gray; }
-    .refresh-btn {
+    .top-bar button {
       background: none;
       border: none;
-      font-size: 20px;
+      font-size: 16px;
       cursor: pointer;
-      margin-left: auto;
     }
-    .game-info {
+    .top-bar-icon {
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .top-bar-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    /* ========== 步数显示 ========== */
+    .step-info {
       width: 100%;
       max-width: 500px;
+      background: #fff;
       text-align: center;
-      margin: 10px 0;
       font-size: 16px;
-      display: flex;
-      justify-content: space-between;
-      padding: 0 10px;
+      padding: 5px 0;
+      margin-bottom: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+
+    /* ========== 卡片网格 ========== */
     .card-grid {
       display: grid;
-      gap: 5px;
+      gap: 10px;
       margin: 10px auto;
-      width: 90%;
-      max-width: 500px;
       justify-content: center;
-      background: #dcdcdc;
-      padding: 10px;
-      border-radius: 5px;
+      background: #f0f0f0;
     }
     .card {
       width: 60px;
       height: 60px;
       perspective: 800px;
       cursor: pointer;
-      position: relative;
+      background: #fff;
+      border-radius: 5px;
     }
     .card.blank {
       visibility: hidden;
@@ -68,30 +81,32 @@
     .card-inner {
       width: 100%;
       height: 100%;
+      position: relative;
       transform-style: preserve-3d;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease-in-out;
       border-radius: 5px;
     }
-    .card.flipped .card-inner,
-    .card.matched .card-inner {
+    .card.flipped .card-inner {
       transform: rotateY(180deg);
     }
-    .card.matched {
+    .card.matched .card-inner {
+      transform: rotateY(180deg);
       pointer-events: none;
+      opacity: 0.7;
     }
     .card-face {
       position: absolute;
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       display: flex;
       justify-content: center;
       align-items: center;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .card-front {
-      background: #fff;
+      background-color: #fff;
       transform: rotateY(180deg);
       overflow: hidden;
     }
@@ -101,76 +116,369 @@
       object-fit: cover;
     }
     .card-back {
+      background-color: #4CAF50;
+    }
+
+    /* ========== 底部按钮 ========== */
+    .bottom-bar {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      justify-content: center; /* 居中对齐 */
+      align-items: center;
+      background: #fff;
+      padding: 10px 0;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+      margin-top: auto;
+      gap: 20px; /* 底部按钮间距 */
+    }
+    .bottom-bar button {
       background: #4CAF50;
+      border: none;
+      color: #fff;
+      padding: 10px 15px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* ========== 通关提示 ========== */
+    #winMessage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: none;
+      text-align: center;
+      z-index: 999;
+    }
+    #winMessage h2 {
+      margin-bottom: 10px;
+    }
+    #winMessage button {
+      margin-top: 10px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* ========== 排行榜（第三关） ========== */
+    #leaderboard {
+      display: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+    #leaderboard h3 {
+      margin: 10px 0;
+    }
+    #leaderboard ul {
+      list-style: none;
+      padding: 0;
+    }
+    #leaderboard li {
+      margin: 5px 0;
+    }
+
+    /* ========== 图鉴模态框 ========== */
+    #galleryModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+    .gallery-content {
+      background: #fff;
+      width: 80%;
+      max-width: 400px;
+      max-height: 80%;
+      overflow-y: auto;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .gallery-content h3 {
+      margin-bottom: 10px;
+    }
+    .gallery-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fill, 60px);
+      justify-content: center;
+    }
+    .gallery-item {
+      width: 60px;
+      height: 60px;
+      overflow: hidden;
+      border-radius: 5px;
+      position: relative;
+      cursor: pointer;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* 详情弹窗 */
+    #detailModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .detail-content {
+      background: #fff;
+      width: 70%;
+      max-width: 300px;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+    .detail-content img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .detail-content p {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .detail-content button {
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* 版本号 */
+    #version {
+      font-size: 14px;
+      color: gray;
+      margin-top: 5px;
     }
   </style>
 </head>
 <body>
+  <!-- 顶部导航 -->
   <div class="top-bar">
-    <div class="version">版本号：20250309-3</div>
-    <button class="refresh-btn" onclick="refreshImages()">⟳</button>
+    <button onclick="goBack()">←</button>
+    <div class="top-bar-title" id="levelTitle">第一关</div>
+    <button onclick="refreshImages()">刷新</button>
+    <div class="top-bar-icon" onclick="openSettings()">⚙</div>
   </div>
 
-  <div class="game-info">
-    <div>关卡: <span id="level">1</span></div>
-    <div>步数: <span id="stepCount">0</span></div>
+  <!-- 步数显示 -->
+  <div class="step-info">
+    步数：<span id="stepCount">0</span>
   </div>
 
+  <!-- 卡片网格 -->
   <div class="card-grid" id="cardGrid"></div>
 
+  <!-- 通关提示 -->
+  <div id="winMessage">
+    <h2>恭喜通关！</h2>
+    <p>本关共用步数：<span id="finalSteps">0</span></p>
+    <div id="leaderboard">
+      <h3>第三关排行榜</h3>
+      <ul id="leaderboardList"></ul>
+    </div>
+    <button onclick="nextLevel()">下一关</button>
+  </div>
+
+  <!-- 图鉴模态框 -->
+  <div id="galleryModal" onclick="closeGalleryModal()">
+    <div class="gallery-content" onclick="event.stopPropagation()">
+      <h3>已收集图鉴</h3>
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <button style="margin-top:10px;" onclick="closeGalleryModal()">关闭</button>
+    </div>
+  </div>
+
+  <!-- 图鉴详情弹窗 -->
+  <div id="detailModal" onclick="closeDetailModal()">
+    <div class="detail-content" onclick="event.stopPropagation()">
+      <img id="detailImage" src="" alt="详情" />
+      <p id="detailText"></p>
+      <button onclick="closeDetailModal()">关闭</button>
+    </div>
+  </div>
+
+  <!-- 底部按钮 -->
+  <div class="bottom-bar">
+    <button onclick="showLeaderboard()">排行榜</button>
+    <button onclick="goHome()">主画面</button>
+    <button onclick="showGallery()">图鉴</button>
+  </div>
+
+  <!-- 版本号 -->
+  <div id="version">版本号：20250309-1</div>
+
   <script>
+    /* ================================
+       配置与数据
+    ================================ */
+    // 所有可用图片
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
+      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
       'https://www.cmfish.com/kinds/fish_s/diao.jpg',
       'https://www.cmfish.com/kinds/fish_s/shenxian.jpg',
+      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg',
       'https://www.cmfish.com/kinds/fish_s/lion.jpg',
       'https://www.cmfish.com/kinds/fish_s/bianfu.jpg',
       'https://www.cmfish.com/kinds/fish_s/ziyin.jpg',
+      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg',
+      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg',
+      'https://www.cmfish.com/kinds/fish_s/hailong.jpg',
+      'https://www.cmfish.com/kinds/fish_s/shark.jpg',
+      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg',
+      'https://www.cmfish.com/kinds/fish_s/leida.jpg',
+      'https://www.cmfish.com/kinds/fish_s/huli.jpg',
+      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg',
+      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg',
+      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg'
     ];
-    const defaultImage = "https://via.placeholder.com/80?text=?";
+    // 图片详情（图鉴用） - 示例描述，可自行替换
+    const imageInfos = {
+      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg': '小丑鱼(1) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg': '小丑鱼(2) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/diao.jpg': '吊类鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg': '神仙鱼(1) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg': '神仙鱼(2) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/lion.jpg': '狮子鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg': '蝙蝠鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg': '紫色鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg': '月眉鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg': '海马的简介',
+      'https://www.cmfish.com/kinds/fish_s/hailong.jpg': '海龙的简介',
+      'https://www.cmfish.com/kinds/fish_s/shark.jpg': '鲨鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg': '虾虎鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/leida.jpg': '雷达鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/huli.jpg': '狐狸鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg': '天竺鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg': '青蛙鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg': '牛角鱼的简介'
+    };
 
+    let currentLevel = 1; // 1,2,3
     let stepCount = 0;
     let matchedPairs = 0;
-    let flippedCards = [];
     let lockBoard = false;
+    let flippedCards = [];
+    let finalSteps = 0;
 
+    // 第三关排行榜(本地存储: 步数越少越靠前)
+    let leaderboard = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
+
+    // 已解锁图鉴(配对成功)
+    let unlockedImages = new Set(); 
+
+    /* ================================
+       DOM元素
+    ================================ */
+    const levelTitle = document.getElementById('levelTitle');
     const stepCountEl = document.getElementById('stepCount');
     const cardGrid = document.getElementById('cardGrid');
+    const winMessage = document.getElementById('winMessage');
+    const finalStepsEl = document.getElementById('finalSteps');
+    const leaderboardDiv = document.getElementById('leaderboard');
+    const leaderboardList = document.getElementById('leaderboardList');
+    const galleryModal = document.getElementById('galleryModal');
+    const galleryGrid = document.getElementById('galleryGrid');
+    const detailModal = document.getElementById('detailModal');
+    const detailImage = document.getElementById('detailImage');
+    const detailText = document.getElementById('detailText');
 
+    /* ================================
+       关卡初始化
+    ================================ */
     function initLevel() {
-      let cols = 4, rows = 4;
+      let cols, rows;
+      if (currentLevel === 1) {
+        cols = 4; rows = 4; // 16格
+        levelTitle.textContent = "第一关";
+      } else if (currentLevel === 2) {
+        cols = 6; rows = 4; // 24格
+        levelTitle.textContent = "第二关";
+      } else {
+        cols = 6; rows = 6; // 36格
+        levelTitle.textContent = "第三关";
+      }
       stepCount = 0;
-      stepCountEl.textContent = stepCount;
+      stepCountEl.textContent = "0";
       matchedPairs = 0;
       flippedCards = [];
       lockBoard = true;
+      winMessage.style.display = 'none';
       cardGrid.innerHTML = '';
+
+      let totalCards = cols * rows; // 16 / 24 / 36
+      let half = totalCards / 2;    // 8 / 12 / 18
+      let selectedImages = imagesPool.slice(0, half);
+      let cardImages = [...selectedImages, ...selectedImages];
+
+      // 第二关: 在索引12插入null可做空白，但题意仅总格24
+      // if (currentLevel === 2) { ... }
+
+      shuffleArray(cardImages);
       cardGrid.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
 
-      let cardImages = [...imagesPool, ...imagesPool];
-      cardImages = shuffleArray(cardImages);
-
-      cardImages.forEach((imgUrl) => {
-        cardGrid.appendChild(createCard(imgUrl));
+      cardImages.forEach(imgUrl => {
+        const card = createCard(imgUrl);
+        cardGrid.appendChild(card);
       });
 
-      const allCards = document.querySelectorAll('.card');
-      allCards.forEach(card => card.classList.add('flipped'));
+      // 3秒预览
+      const allCards = document.querySelectorAll('.card:not(.blank)');
+      allCards.forEach(c => c.classList.add('flipped'));
       setTimeout(() => {
-        allCards.forEach(card => card.classList.remove('flipped'));
+        allCards.forEach(c => c.classList.remove('flipped'));
         lockBoard = false;
-      }, 2000);
+      }, 3000);
     }
 
+    /* ================================
+       卡片生成 & 翻牌逻辑
+    ================================ */
     function createCard(imgUrl) {
       const card = document.createElement('div');
       card.className = 'card';
+      if (!imgUrl) {
+        card.classList.add('blank');
+        return card;
+      }
       card.innerHTML = `
         <div class="card-inner">
-          <div class="card-face card-front"><img src="${imgUrl}" onerror="this.src='${defaultImage}'"></div>
+          <div class="card-face card-front"></div>
           <div class="card-face card-back"></div>
         </div>
       `;
+      const front = card.querySelector('.card-front');
+      const imageEl = document.createElement('img');
+      imageEl.src = imgUrl;
+      imageEl.onerror = () => imageEl.src = defaultImage;
+      front.appendChild(imageEl);
+
       card.addEventListener('click', () => handleCardClick(card, imgUrl));
       return card;
     }
@@ -179,12 +487,11 @@
       if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
       card.classList.add('flipped');
       flippedCards.push({ card, imgUrl });
-
       if (flippedCards.length === 2) {
         lockBoard = true;
         stepCount++;
-        stepCountEl.textContent = stepCount;
-        setTimeout(checkMatch, 300);
+        stepCountEl.textContent = stepCount.toString();
+        setTimeout(checkMatch, 500);
       }
     }
 
@@ -194,9 +501,9 @@
         first.card.classList.add('matched');
         second.card.classList.add('matched');
         matchedPairs++;
-        if (matchedPairs === imagesPool.length) {
-          alert("通关成功！");
-        }
+        // 解锁图鉴
+        unlockedImages.add(first.imgUrl);
+        if (isLevelComplete()) endLevel();
       } else {
         first.card.classList.remove('flipped');
         second.card.classList.remove('flipped');
@@ -205,14 +512,144 @@
       lockBoard = false;
     }
 
-    function refreshImages() {
+    function isLevelComplete() {
+      let total = cardGrid.children.length;
+      return matchedPairs === (total / 2);
+    }
+
+    function endLevel() {
+      finalSteps = stepCount;
+      finalStepsEl.textContent = finalSteps;
+      winMessage.style.display = 'block';
+      if (currentLevel === 3) {
+        // 记录排行榜
+        leaderboard.push(finalSteps);
+        leaderboard.sort((a,b) => a - b);
+        leaderboard = leaderboard.slice(0,5);
+        localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
+        renderLeaderboard();
+        document.getElementById('leaderboard').style.display = 'block';
+      } else {
+        document.getElementById('leaderboard').style.display = 'none';
+      }
+      lockBoard = true;
+    }
+
+    /* ================================
+       切换关卡 & 排行榜
+    ================================ */
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel > 3) currentLevel = 3;
       initLevel();
     }
-
-    function shuffleArray(array) {
-      return array.sort(() => Math.random() - 0.5);
+    function renderLeaderboard() {
+      leaderboardList.innerHTML = '';
+      leaderboard.forEach((steps, idx) => {
+        const li = document.createElement('li');
+        li.textContent = `第${idx+1}名：${steps}步`;
+        leaderboardList.appendChild(li);
+      });
+    }
+    function showLeaderboard() {
+      alert("这里可切换到排行榜界面。当前第三关排行榜保存在本地。");
     }
 
+    /* ================================
+       图鉴系统
+    ================================ */
+    function showGallery() {
+      // 打开图鉴模态框
+      galleryModal.style.display = 'flex';
+      // 渲染已解锁图片
+      galleryGrid.innerHTML = '';
+      unlockedImages.forEach(url => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        const img = document.createElement('img');
+        img.src = url;
+        img.onerror = () => img.src = defaultImage;
+        item.appendChild(img);
+        item.addEventListener('click', () => openDetailModal(url));
+        galleryGrid.appendChild(item);
+      });
+    }
+    function closeGalleryModal() {
+      galleryModal.style.display = 'none';
+    }
+    // 详情
+    function openDetailModal(url) {
+      detailImage.src = url;
+      detailText.textContent = imageInfos[url] || "暂无详细介绍";
+      detailModal.style.display = 'flex';
+    }
+    function closeDetailModal() {
+      detailModal.style.display = 'none';
+    }
+
+    /* ================================
+       刷新按钮 - 连点5次一键通关
+    ================================ */
+    let refreshCount = 0;
+    let refreshTimer = null;
+    function refreshImages() {
+      // 刷新卡片图片
+      document.querySelectorAll('.card-front img').forEach(img => {
+        img.src = img.src;
+      });
+      // 统计连点次数
+      refreshCount++;
+      clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        refreshCount = 0;
+      }, 3000);
+      if (refreshCount >= 5) {
+        oneKeyComplete();
+        refreshCount = 0;
+      }
+    }
+    function oneKeyComplete() {
+      // 所有非空卡片直接翻开并matched
+      document.querySelectorAll('.card:not(.blank)').forEach(card => {
+        card.classList.add('flipped');
+        card.classList.add('matched');
+      });
+      // 解锁图鉴
+      let total = cardGrid.children.length;
+      matchedPairs = total / 2;
+      stepCount++;
+      stepCountEl.textContent = stepCount.toString();
+      // 全部图片添加到 unlockedImages
+      let frontImages = document.querySelectorAll('.card-front img');
+      frontImages.forEach(img => unlockedImages.add(img.src));
+      endLevel();
+    }
+
+    /* ================================
+       其他按钮功能
+    ================================ */
+    function goBack() {
+      alert("返回上一页示例");
+    }
+    function openSettings() {
+      alert("打开设置示例");
+    }
+    function goHome() {
+      alert("返回主画面示例");
+    }
+
+    /* ================================
+       工具函数
+    ================================ */
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // 初始化
     initLevel();
   </script>
 </body>
