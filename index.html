@@ -1,51 +1,86 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>翻牌消消乐 - 适配16:9手机端</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, user-scalable=no" />
+  <title>翻牌消消乐 - 步数规则</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
       font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       height: 100vh;
       margin: 0;
-      background-color: #f0f0f0;
-      overflow: hidden;
     }
-    .game-container {
-      width: 90vw;
+
+    /* 顶部导航栏 */
+    .top-bar {
+      width: 100%;
       max-width: 500px;
-      text-align: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+    .top-bar button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .top-bar-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .top-bar-icon {
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* 步数显示 */
+    .step-info {
+      width: 100%;
+      max-width: 500px;
+      background: #fff;
+      text-align: center;
+      font-size: 16px;
+      padding: 5px 0;
+      margin-bottom: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* 卡片网格 */
     .card-grid {
       display: grid;
-      gap: 5px;
-      margin: 20px auto;
-      width: 100%;
+      gap: 10px;
+      margin: 10px auto;
       justify-content: center;
+      background: #f0f0f0;
     }
     .card {
-      width: 20vw;
-      height: 20vw;
-      max-width: 80px;
-      max-height: 80px;
-      perspective: 1000px;
+      width: 60px;
+      height: 60px;
+      perspective: 800px;
       cursor: pointer;
-      position: relative;
-    }
-    .card.blank {
-      visibility: hidden;
-      pointer-events: none;
+      background: #fff;
+      border-radius: 5px;
     }
     .card-inner {
       width: 100%;
       height: 100%;
+      position: relative;
       transform-style: preserve-3d;
       transition: transform 0.3s ease-in-out;
+      border-radius: 5px;
     }
     .card.flipped .card-inner {
       transform: rotateY(180deg);
@@ -53,17 +88,18 @@
     .card.matched .card-inner {
       transform: rotateY(180deg);
       pointer-events: none;
+      opacity: 0.7;
     }
     .card-face {
+      position: absolute;
       width: 100%;
       height: 100%;
-      position: absolute;
       backface-visibility: hidden;
-      border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       display: flex;
       justify-content: center;
       align-items: center;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .card-front {
       background-color: #fff;
@@ -78,71 +114,109 @@
     .card-back {
       background-color: #4CAF50;
     }
-    .button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 10px;
+
+    /* 底部按钮 */
+    .bottom-bar {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #fff;
+      padding: 10px 0;
+      box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+      margin-top: auto;
+    }
+    .bottom-bar button {
+      background: #4CAF50;
       border: none;
-      background-color: #4CAF50;
       color: #fff;
-      border-radius: 5px;
-    }
-    .button.hidden {
-      display: none;
-    }
-    .game-info {
-      font-size: 16px;
-      margin-top: 10px;
-    }
-    #timer {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 5px;
-      font-size: 18px;
-    }
-    #version {
-      margin-top: 10px;
+      padding: 10px 15px;
       font-size: 14px;
-      color: gray;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* 恭喜通关提示 */
+    #winMessage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: none;
+      text-align: center;
+    }
+    #winMessage h2 {
+      margin-bottom: 10px;
+    }
+    #winMessage button {
+      margin-top: 10px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      font-size: 16px;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* 排行榜（第三关） */
+    #leaderboard {
+      display: none;
+      text-align: center;
+    }
+    #leaderboard h3 {
+      margin: 10px 0;
+    }
+    #leaderboard ul {
+      list-style: none;
+      padding: 0;
+    }
+    #leaderboard li {
+      margin: 5px 0;
     }
   </style>
 </head>
 <body>
-  <div id="timer">时间: 0 秒</div>
-  <div class="game-container">
-    <button class="button" id="startButton" onclick="startGame()">开始游戏</button>
-    <button class="button" id="refreshButton" onclick="refreshImages()">刷新图片</button>
-    <button class="button hidden" id="nextLevelButton" onclick="nextLevel()">下一关</button>
-    <div class="card-grid hidden" id="cardGrid"></div>
-    <div class="game-info">
-      关卡: <span id="level">1</span>
-    </div>
-    <div id="winMessage" class="hidden">恭喜通关！</div>
-    <div id="version">版本号：20250308-2</div>
+  <!-- 顶部栏 -->
+  <div class="top-bar">
+    <button onclick="goBack()">←</button>
+    <div class="top-bar-title" id="levelTitle">第一关</div>
+    <div class="top-bar-icon" onclick="openSettings()">⚙</div>
   </div>
 
-  <audio id="matchSound">
-    <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
-  </audio>
+  <!-- 步数显示 -->
+  <div class="step-info">
+    步数：<span id="stepCount">0</span>
+  </div>
+
+  <!-- 卡片网格 -->
+  <div class="card-grid" id="cardGrid"></div>
+
+  <!-- 通关提示 -->
+  <div id="winMessage">
+    <h2>恭喜通关！</h2>
+    <p>本关共用步数：<span id="finalSteps">0</span></p>
+    <div id="leaderboard">
+      <h3>排行榜（第三关）</h3>
+      <ul id="leaderboardList"></ul>
+    </div>
+    <button onclick="nextLevel()">下一关</button>
+  </div>
+
+  <!-- 底部按钮 -->
+  <div class="bottom-bar">
+    <button onclick="showLeaderboard()">排行榜</button>
+    <button onclick="goHome()">主画面</button>
+    <button onclick="showGallery()">图鉴</button>
+  </div>
 
   <script>
-    const cardGrid = document.getElementById('cardGrid');
-    const timerElement = document.getElementById('timer');
-    const winMessage = document.getElementById('winMessage');
-    const levelElement = document.getElementById('level');
-    const nextLevelButton = document.getElementById('nextLevelButton');
-    const startButton = document.getElementById('startButton');
-    const refreshButton = document.getElementById('refreshButton');
-    const versionElement = document.getElementById('version');
-    
-    // 默认占位图（图片加载失败时显示）
-    const defaultImage = "https://via.placeholder.com/80?text=?";
-    // 使用您提供的图片 URL 数组
+    // ========== 基础配置 ==========
     const images = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -163,121 +237,124 @@
       'https://www.cmfish.com/kinds/fish_s/qingwa.jpg',
       'https://www.cmfish.com/kinds/fish_s/niujiao.jpg'
     ];
-    
-    let flippedCards = [];
+    const defaultImage = "https://via.placeholder.com/80?text=?"; // 占位图
+    let currentLevel = 1; // 1/2/3
+    let stepCount = 0;   // 步数
     let matchedPairs = 0;
-    let currentLevel = 1;
-    const maxLevel = 3;
-    let currentPairs = 0; // 当前关卡需要匹配的对数
     let lockBoard = false;
-    let elapsedTime = 0;
-    let timerInterval;
-    
-    // 测试人员一键通关：刷新按钮在3秒内连续点击5次触发
-    let refreshClickCount = 0;
-    let refreshTimer;
-    
-    // 配对检查延迟
-    const flipDelay = 300;
-    
-    function startGame() {
-      // 隐藏开始、下一关按钮，显示刷新按钮
-      startButton.classList.add('hidden');
-      nextLevelButton.classList.add('hidden');
-      refreshButton.classList.remove('hidden');
-      
-      // 重置计时
-      elapsedTime = 0;
-      updateTimer();
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        elapsedTime++;
-        updateTimer();
-      }, 1000);
-      
-      let gridSize, totalPairs;
+    let flippedCards = [];
+    let finalSteps = 0;
+
+    // 第三关排行榜
+    let leaderboard = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
+
+    // ========== DOM元素 ==========
+    const levelTitle = document.getElementById('levelTitle');
+    const stepCountElement = document.getElementById('stepCount');
+    const cardGrid = document.getElementById('cardGrid');
+    const winMessage = document.getElementById('winMessage');
+    const finalStepsElement = document.getElementById('finalSteps');
+    const leaderboardList = document.getElementById('leaderboardList');
+    const leaderboardDiv = document.getElementById('leaderboard');
+
+    // ========== 关卡配置 ==========
+    function initLevel() {
+      let gridCols, gridRows;
       if (currentLevel === 1) {
-        gridSize = 4;
-        totalPairs = 8;
+        gridCols = 4; // 16格
+        gridRows = 4;
+        levelTitle.textContent = "第一关";
       } else if (currentLevel === 2) {
-        gridSize = 5;
-        totalPairs = 12;
+        gridCols = 6; // 24格
+        gridRows = 4; // 或4x6
+        levelTitle.textContent = "第二关";
       } else {
-        gridSize = 6;
-        totalPairs = 18;
+        gridCols = 6; // 36格
+        gridRows = 6;
+        levelTitle.textContent = "第三关";
       }
-      currentPairs = totalPairs;
-      
-      // 从图片数组中取前 totalPairs 张，制作匹配对
-      let selectedImages = images.slice(0, totalPairs);
-      let cardImages = [...selectedImages, ...selectedImages];
-      
-      // 第二关：在5×5网格中确保正中间（第三行第三列，即索引12）为空白
-      if (currentLevel === 2) {
-        cardImages = shuffleArray(cardImages);
-        cardImages.splice(12, 0, null);
-      } else {
-        cardImages = shuffleArray(cardImages);
-      }
-      
-      cardGrid.innerHTML = '';
-      winMessage.classList.add('hidden');
+      stepCount = 0;
+      stepCountElement.textContent = stepCount.toString();
       matchedPairs = 0;
       flippedCards = [];
-      lockBoard = false;
-      
-      cardImages.forEach((imageUrl, index) => {
-        cardGrid.appendChild(createCard(imageUrl, index));
+      lockBoard = true;
+      cardGrid.innerHTML = '';
+      cardGrid.style.gridTemplateColumns = `repeat(${gridCols}, 60px)`;
+
+      let totalCards = gridCols * gridRows; // 16/24/36
+      let half = totalCards / 2; // 8/12/18
+
+      // 取前 half 张图片
+      let selected = images.slice(0, half);
+      let cardImages = [...selected, ...selected];
+
+      // 第二关若需要在特定位置插空白，可在此处插入null
+      // 不过题意仅给总网格24格，未明确空格。若需要正中间空格，可插入:
+      // if (currentLevel === 2) { 
+      //   let centerIndex = (gridCols * gridRows) / 2 - (gridCols/2);
+      //   cardImages.splice(centerIndex, 0, null);
+      // }
+
+      // 洗牌
+      shuffleArray(cardImages);
+
+      // 创建卡片
+      cardImages.forEach((imgUrl) => {
+        cardGrid.appendChild(createCard(imgUrl));
       });
-      
-      cardGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-      cardGrid.classList.remove('hidden');
-      
-      // 游戏开始前3秒预览：所有非空卡片翻开3秒后盖上
-      document.querySelectorAll('.card:not(.blank)').forEach(card => card.classList.add('flipped'));
+
+      // 3秒预览
+      const allCards = document.querySelectorAll('.card:not(.blank)');
+      allCards.forEach(c => c.classList.add('flipped'));
       setTimeout(() => {
-        document.querySelectorAll('.card:not(.blank)').forEach(card => card.classList.remove('flipped'));
+        allCards.forEach(c => c.classList.remove('flipped'));
         lockBoard = false;
       }, 3000);
     }
-    
-    function createCard(imageUrl, index) {
+
+    function createCard(imgUrl) {
       const card = document.createElement('div');
       card.className = 'card';
-      if (!imageUrl) {
+      if (imgUrl === null) {
         card.classList.add('blank');
         return card;
       }
       card.innerHTML = `
         <div class="card-inner">
-          <div class="card-face card-front"><img src="${imageUrl}"></div>
+          <div class="card-face card-front"></div>
           <div class="card-face card-back"></div>
         </div>
       `;
-      card.addEventListener('click', () => handleCardClick(card, imageUrl));
+      const front = card.querySelector('.card-front');
+      const imageEl = document.createElement('img');
+      imageEl.src = imgUrl;
+      imageEl.onerror = () => imageEl.src = defaultImage;
+      front.appendChild(imageEl);
+
+      card.addEventListener('click', () => handleCardClick(card, imgUrl));
       return card;
     }
-    
-    function handleCardClick(card, imageUrl) {
+
+    function handleCardClick(card, imgUrl) {
       if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
       card.classList.add('flipped');
-      flippedCards.push({ card, imageUrl });
+      flippedCards.push({ card, imgUrl });
+
       if (flippedCards.length === 2) {
         lockBoard = true;
-        setTimeout(checkMatch, flipDelay);
+        stepCount++;
+        stepCountElement.textContent = stepCount.toString();
+        setTimeout(checkMatch, 500);
       }
     }
-    
+
     function checkMatch() {
       const [first, second] = flippedCards;
-      if (first.imageUrl === second.imageUrl) {
+      if (first.imgUrl === second.imgUrl) {
         first.card.classList.add('matched');
         second.card.classList.add('matched');
         matchedPairs++;
-        playMatchSound();
-        if (matchedPairs === currentPairs) {
-          endGame();
-        }
+        if (isLevelComplete()) endLevel();
       } else {
         first.card.classList.remove('flipped');
         second.card.classList.remove('flipped');
@@ -285,74 +362,107 @@
       flippedCards = [];
       lockBoard = false;
     }
-    
-    function updateTimer() {
-      timerElement.innerText = `时间: ${elapsedTime} 秒`;
+
+    function isLevelComplete() {
+      // 计算卡片数量
+      let total = cardGrid.children.length;
+      let half = total / 2;
+      return matchedPairs === half;
     }
-    
+
+    function endLevel() {
+      finalSteps = stepCount;
+      finalStepsElement.textContent = finalSteps;
+      winMessage.style.display = 'block';
+      if (currentLevel === 3) {
+        // 记录到排行榜
+        leaderboard.push(finalSteps);
+        leaderboard.sort((a,b) => a - b); // 步数越少越前
+        leaderboard = leaderboard.slice(0, 5); // 仅保留前5
+        localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
+        renderLeaderboard();
+        leaderboardDiv.style.display = 'block';
+      } else {
+        leaderboardDiv.style.display = 'none';
+      }
+    }
+
+    function renderLeaderboard() {
+      leaderboardList.innerHTML = '';
+      leaderboard.forEach((steps, i) => {
+        const li = document.createElement('li');
+        li.textContent = `第${i+1}名：${steps}步`;
+        leaderboardList.appendChild(li);
+      });
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel > 3) currentLevel = 3; // 最多第三关
+      winMessage.style.display = 'none';
+      initLevel();
+    }
+
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // ========== 导航按钮功能 ==========
+    function goBack() {
+      alert("返回上一页功能示例");
+    }
+    function openSettings() {
+      alert("打开设置功能示例");
+    }
+    function showLeaderboard() {
+      alert("打开排行榜功能示例");
+    }
+    function goHome() {
+      alert("返回主画面功能示例");
+    }
+    function showGallery() {
+      alert("查看图鉴功能示例");
+    }
+
+    // ========== 刷新按钮 - 连点5次可一键通关（开发者功能） ==========
+    let refreshCount = 0;
+    let refreshTimer = null;
     function refreshImages() {
-      // 刷新所有图片重新加载
+      // 刷新图片
       document.querySelectorAll('.card-front img').forEach(img => {
         img.src = img.src;
       });
-      // 记录刷新按钮连续点击
-      refreshClickCount++;
+      // 统计连点次数
+      refreshCount++;
       clearTimeout(refreshTimer);
       refreshTimer = setTimeout(() => {
-        refreshClickCount = 0;
+        refreshCount = 0;
       }, 3000);
-      if (refreshClickCount >= 5) {
-        testComplete();
-        refreshClickCount = 0;
+      if (refreshCount >= 5) {
+        oneKeyComplete();
+        refreshCount = 0;
       }
     }
-    
-    // 开发者一键通关：自动将所有非空卡牌翻开并标记为匹配
-    function testComplete() {
-      document.querySelectorAll('.card:not(.blank)').forEach(card => {
-        card.classList.add('flipped');
-        card.classList.add('matched');
+    function oneKeyComplete() {
+      // 一键通关
+      document.querySelectorAll('.card:not(.blank)').forEach(c => {
+        c.classList.add('flipped');
+        c.classList.add('matched');
       });
-      matchedPairs = currentPairs;
-      endGame();
+      // 直接结束关卡
+      const total = cardGrid.children.length;
+      matchedPairs = total / 2;
+      stepCount++;
+      stepCountElement.textContent = stepCount;
+      endLevel();
     }
-    
-    function playMatchSound() {
-      const sound = document.getElementById('matchSound');
-      sound.currentTime = 0;
-      sound.play();
-    }
-    
-    function endGame() {
-      clearInterval(timerInterval);
-      winMessage.classList.remove('hidden');
-      if (currentLevel < maxLevel) {
-        nextLevelButton.classList.remove('hidden');
-      }
-      // 锁定所有卡牌
-      lockBoard = true;
-    }
-    
-    function nextLevel() {
-      currentLevel++;
-      document.getElementById('level').innerText = currentLevel;
-      startGame();
-      winMessage.classList.add('hidden');
-      nextLevelButton.classList.add('hidden');
-    }
-    
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-    
-    // 初始显示开始按钮和版本信息
-    startButton.classList.remove('hidden');
-    document.getElementById('level').innerText = currentLevel;
-    updateTimer();
+
+    // ========== 初始化 ==========
+    initLevel();
   </script>
 </body>
 </html>
