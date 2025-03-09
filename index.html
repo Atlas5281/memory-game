@@ -13,23 +13,23 @@
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100vh;
-      margin: 0;
     }
 
-    /* 顶部导航栏 */
+    /* ========== 顶部导航栏 ========== */
     .top-bar {
       width: 100%;
       max-width: 500px;
       display: flex;
-      justify-content: space-between;
+      justify-content: center; /* 居中对齐 */
       align-items: center;
       background: #fff;
       padding: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      gap: 20px; /* 图标之间的间距 */
     }
     .top-bar button {
       background: none;
@@ -37,16 +37,16 @@
       font-size: 16px;
       cursor: pointer;
     }
-    .top-bar-title {
-      font-size: 18px;
-      font-weight: bold;
-    }
     .top-bar-icon {
       font-size: 18px;
       cursor: pointer;
     }
+    .top-bar-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
 
-    /* 步数显示 */
+    /* ========== 步数显示 ========== */
     .step-info {
       width: 100%;
       max-width: 500px;
@@ -58,7 +58,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* 卡片网格 */
+    /* ========== 卡片网格 ========== */
     .card-grid {
       display: grid;
       gap: 10px;
@@ -73,6 +73,10 @@
       cursor: pointer;
       background: #fff;
       border-radius: 5px;
+    }
+    .card.blank {
+      visibility: hidden;
+      pointer-events: none;
     }
     .card-inner {
       width: 100%;
@@ -115,17 +119,18 @@
       background-color: #4CAF50;
     }
 
-    /* 底部按钮 */
+    /* ========== 底部按钮 ========== */
     .bottom-bar {
       width: 100%;
       max-width: 500px;
       display: flex;
-      justify-content: space-around;
+      justify-content: center; /* 居中对齐 */
       align-items: center;
       background: #fff;
       padding: 10px 0;
       box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
       margin-top: auto;
+      gap: 20px; /* 底部按钮间距 */
     }
     .bottom-bar button {
       background: #4CAF50;
@@ -137,7 +142,7 @@
       cursor: pointer;
     }
 
-    /* 恭喜通关提示 */
+    /* ========== 通关提示 ========== */
     #winMessage {
       position: absolute;
       top: 50%;
@@ -149,6 +154,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       display: none;
       text-align: center;
+      z-index: 999;
     }
     #winMessage h2 {
       margin-bottom: 10px;
@@ -164,10 +170,11 @@
       cursor: pointer;
     }
 
-    /* 排行榜（第三关） */
+    /* ========== 排行榜（第三关） ========== */
     #leaderboard {
       display: none;
       text-align: center;
+      margin-top: 10px;
     }
     #leaderboard h3 {
       margin: 10px 0;
@@ -179,13 +186,103 @@
     #leaderboard li {
       margin: 5px 0;
     }
+
+    /* ========== 图鉴模态框 ========== */
+    #galleryModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+    .gallery-content {
+      background: #fff;
+      width: 80%;
+      max-width: 400px;
+      max-height: 80%;
+      overflow-y: auto;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .gallery-content h3 {
+      margin-bottom: 10px;
+    }
+    .gallery-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fill, 60px);
+      justify-content: center;
+    }
+    .gallery-item {
+      width: 60px;
+      height: 60px;
+      overflow: hidden;
+      border-radius: 5px;
+      position: relative;
+      cursor: pointer;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* 详情弹窗 */
+    #detailModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .detail-content {
+      background: #fff;
+      width: 70%;
+      max-width: 300px;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+    .detail-content img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .detail-content p {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .detail-content button {
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* 版本号 */
+    #version {
+      font-size: 14px;
+      color: gray;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
-  <!-- 顶部栏 -->
+  <!-- 顶部导航 -->
   <div class="top-bar">
     <button onclick="goBack()">←</button>
     <div class="top-bar-title" id="levelTitle">第一关</div>
+    <button onclick="refreshImages()">刷新</button>
     <div class="top-bar-icon" onclick="openSettings()">⚙</div>
   </div>
 
@@ -202,10 +299,28 @@
     <h2>恭喜通关！</h2>
     <p>本关共用步数：<span id="finalSteps">0</span></p>
     <div id="leaderboard">
-      <h3>排行榜（第三关）</h3>
+      <h3>第三关排行榜</h3>
       <ul id="leaderboardList"></ul>
     </div>
     <button onclick="nextLevel()">下一关</button>
+  </div>
+
+  <!-- 图鉴模态框 -->
+  <div id="galleryModal" onclick="closeGalleryModal()">
+    <div class="gallery-content" onclick="event.stopPropagation()">
+      <h3>已收集图鉴</h3>
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <button style="margin-top:10px;" onclick="closeGalleryModal()">关闭</button>
+    </div>
+  </div>
+
+  <!-- 图鉴详情弹窗 -->
+  <div id="detailModal" onclick="closeDetailModal()">
+    <div class="detail-content" onclick="event.stopPropagation()">
+      <img id="detailImage" src="" alt="详情" />
+      <p id="detailText"></p>
+      <button onclick="closeDetailModal()">关闭</button>
+    </div>
   </div>
 
   <!-- 底部按钮 -->
@@ -215,9 +330,15 @@
     <button onclick="showGallery()">图鉴</button>
   </div>
 
+  <!-- 版本号 -->
+  <div id="version">版本号：20250309-1</div>
+
   <script>
-    // ========== 基础配置 ==========
-    const images = [
+    /* ================================
+       配置与数据
+    ================================ */
+    // 所有可用图片
+    const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
       'https://www.cmfish.com/kinds/fish_s/diao.jpg',
@@ -237,70 +358,94 @@
       'https://www.cmfish.com/kinds/fish_s/qingwa.jpg',
       'https://www.cmfish.com/kinds/fish_s/niujiao.jpg'
     ];
-    const defaultImage = "https://via.placeholder.com/80?text=?"; // 占位图
-    let currentLevel = 1; // 1/2/3
-    let stepCount = 0;   // 步数
+    // 图片详情（图鉴用） - 示例描述，可自行替换
+    const imageInfos = {
+      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg': '小丑鱼(1) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg': '小丑鱼(2) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/diao.jpg': '吊类鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg': '神仙鱼(1) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg': '神仙鱼(2) 的简介',
+      'https://www.cmfish.com/kinds/fish_s/lion.jpg': '狮子鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg': '蝙蝠鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg': '紫色鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg': '月眉鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg': '海马的简介',
+      'https://www.cmfish.com/kinds/fish_s/hailong.jpg': '海龙的简介',
+      'https://www.cmfish.com/kinds/fish_s/shark.jpg': '鲨鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg': '虾虎鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/leida.jpg': '雷达鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/huli.jpg': '狐狸鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg': '天竺鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg': '青蛙鱼的简介',
+      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg': '牛角鱼的简介'
+    };
+
+    let currentLevel = 1; // 1,2,3
+    let stepCount = 0;
     let matchedPairs = 0;
     let lockBoard = false;
     let flippedCards = [];
     let finalSteps = 0;
 
-    // 第三关排行榜
+    // 第三关排行榜(本地存储: 步数越少越靠前)
     let leaderboard = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
 
-    // ========== DOM元素 ==========
+    // 已解锁图鉴(配对成功)
+    let unlockedImages = new Set(); 
+
+    /* ================================
+       DOM元素
+    ================================ */
     const levelTitle = document.getElementById('levelTitle');
-    const stepCountElement = document.getElementById('stepCount');
+    const stepCountEl = document.getElementById('stepCount');
     const cardGrid = document.getElementById('cardGrid');
     const winMessage = document.getElementById('winMessage');
-    const finalStepsElement = document.getElementById('finalSteps');
-    const leaderboardList = document.getElementById('leaderboardList');
+    const finalStepsEl = document.getElementById('finalSteps');
     const leaderboardDiv = document.getElementById('leaderboard');
+    const leaderboardList = document.getElementById('leaderboardList');
+    const galleryModal = document.getElementById('galleryModal');
+    const galleryGrid = document.getElementById('galleryGrid');
+    const detailModal = document.getElementById('detailModal');
+    const detailImage = document.getElementById('detailImage');
+    const detailText = document.getElementById('detailText');
 
-    // ========== 关卡配置 ==========
+    /* ================================
+       关卡初始化
+    ================================ */
     function initLevel() {
-      let gridCols, gridRows;
+      let cols, rows;
       if (currentLevel === 1) {
-        gridCols = 4; // 16格
-        gridRows = 4;
+        cols = 4; rows = 4; // 16格
         levelTitle.textContent = "第一关";
       } else if (currentLevel === 2) {
-        gridCols = 6; // 24格
-        gridRows = 4; // 或4x6
+        cols = 6; rows = 4; // 24格
         levelTitle.textContent = "第二关";
       } else {
-        gridCols = 6; // 36格
-        gridRows = 6;
+        cols = 6; rows = 6; // 36格
         levelTitle.textContent = "第三关";
       }
       stepCount = 0;
-      stepCountElement.textContent = stepCount.toString();
+      stepCountEl.textContent = "0";
       matchedPairs = 0;
       flippedCards = [];
       lockBoard = true;
+      winMessage.style.display = 'none';
       cardGrid.innerHTML = '';
-      cardGrid.style.gridTemplateColumns = `repeat(${gridCols}, 60px)`;
 
-      let totalCards = gridCols * gridRows; // 16/24/36
-      let half = totalCards / 2; // 8/12/18
+      let totalCards = cols * rows; // 16 / 24 / 36
+      let half = totalCards / 2;    // 8 / 12 / 18
+      let selectedImages = imagesPool.slice(0, half);
+      let cardImages = [...selectedImages, ...selectedImages];
 
-      // 取前 half 张图片
-      let selected = images.slice(0, half);
-      let cardImages = [...selected, ...selected];
+      // 第二关: 在索引12插入null可做空白，但题意仅总格24
+      // if (currentLevel === 2) { ... }
 
-      // 第二关若需要在特定位置插空白，可在此处插入null
-      // 不过题意仅给总网格24格，未明确空格。若需要正中间空格，可插入:
-      // if (currentLevel === 2) { 
-      //   let centerIndex = (gridCols * gridRows) / 2 - (gridCols/2);
-      //   cardImages.splice(centerIndex, 0, null);
-      // }
-
-      // 洗牌
       shuffleArray(cardImages);
+      cardGrid.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
 
-      // 创建卡片
-      cardImages.forEach((imgUrl) => {
-        cardGrid.appendChild(createCard(imgUrl));
+      cardImages.forEach(imgUrl => {
+        const card = createCard(imgUrl);
+        cardGrid.appendChild(card);
       });
 
       // 3秒预览
@@ -312,10 +457,13 @@
       }, 3000);
     }
 
+    /* ================================
+       卡片生成 & 翻牌逻辑
+    ================================ */
     function createCard(imgUrl) {
       const card = document.createElement('div');
       card.className = 'card';
-      if (imgUrl === null) {
+      if (!imgUrl) {
         card.classList.add('blank');
         return card;
       }
@@ -339,11 +487,10 @@
       if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
       card.classList.add('flipped');
       flippedCards.push({ card, imgUrl });
-
       if (flippedCards.length === 2) {
         lockBoard = true;
         stepCount++;
-        stepCountElement.textContent = stepCount.toString();
+        stepCountEl.textContent = stepCount.toString();
         setTimeout(checkMatch, 500);
       }
     }
@@ -354,6 +501,8 @@
         first.card.classList.add('matched');
         second.card.classList.add('matched');
         matchedPairs++;
+        // 解锁图鉴
+        unlockedImages.add(first.imgUrl);
         if (isLevelComplete()) endLevel();
       } else {
         first.card.classList.remove('flipped');
@@ -364,75 +513,87 @@
     }
 
     function isLevelComplete() {
-      // 计算卡片数量
       let total = cardGrid.children.length;
-      let half = total / 2;
-      return matchedPairs === half;
+      return matchedPairs === (total / 2);
     }
 
     function endLevel() {
       finalSteps = stepCount;
-      finalStepsElement.textContent = finalSteps;
+      finalStepsEl.textContent = finalSteps;
       winMessage.style.display = 'block';
       if (currentLevel === 3) {
-        // 记录到排行榜
+        // 记录排行榜
         leaderboard.push(finalSteps);
-        leaderboard.sort((a,b) => a - b); // 步数越少越前
-        leaderboard = leaderboard.slice(0, 5); // 仅保留前5
+        leaderboard.sort((a,b) => a - b);
+        leaderboard = leaderboard.slice(0,5);
         localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
         renderLeaderboard();
-        leaderboardDiv.style.display = 'block';
+        document.getElementById('leaderboard').style.display = 'block';
       } else {
-        leaderboardDiv.style.display = 'none';
+        document.getElementById('leaderboard').style.display = 'none';
       }
+      lockBoard = true;
     }
 
+    /* ================================
+       切换关卡 & 排行榜
+    ================================ */
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel > 3) currentLevel = 3;
+      initLevel();
+    }
     function renderLeaderboard() {
       leaderboardList.innerHTML = '';
-      leaderboard.forEach((steps, i) => {
+      leaderboard.forEach((steps, idx) => {
         const li = document.createElement('li');
-        li.textContent = `第${i+1}名：${steps}步`;
+        li.textContent = `第${idx+1}名：${steps}步`;
         leaderboardList.appendChild(li);
       });
     }
-
-    function nextLevel() {
-      currentLevel++;
-      if (currentLevel > 3) currentLevel = 3; // 最多第三关
-      winMessage.style.display = 'none';
-      initLevel();
-    }
-
-    function shuffleArray(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
-    // ========== 导航按钮功能 ==========
-    function goBack() {
-      alert("返回上一页功能示例");
-    }
-    function openSettings() {
-      alert("打开设置功能示例");
-    }
     function showLeaderboard() {
-      alert("打开排行榜功能示例");
-    }
-    function goHome() {
-      alert("返回主画面功能示例");
-    }
-    function showGallery() {
-      alert("查看图鉴功能示例");
+      alert("这里可切换到排行榜界面。当前第三关排行榜保存在本地。");
     }
 
-    // ========== 刷新按钮 - 连点5次可一键通关（开发者功能） ==========
+    /* ================================
+       图鉴系统
+    ================================ */
+    function showGallery() {
+      // 打开图鉴模态框
+      galleryModal.style.display = 'flex';
+      // 渲染已解锁图片
+      galleryGrid.innerHTML = '';
+      unlockedImages.forEach(url => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        const img = document.createElement('img');
+        img.src = url;
+        img.onerror = () => img.src = defaultImage;
+        item.appendChild(img);
+        item.addEventListener('click', () => openDetailModal(url));
+        galleryGrid.appendChild(item);
+      });
+    }
+    function closeGalleryModal() {
+      galleryModal.style.display = 'none';
+    }
+    // 详情
+    function openDetailModal(url) {
+      detailImage.src = url;
+      detailText.textContent = imageInfos[url] || "暂无详细介绍";
+      detailModal.style.display = 'flex';
+    }
+    function closeDetailModal() {
+      detailModal.style.display = 'none';
+    }
+
+    /* ================================
+       刷新按钮 - 连点5次一键通关
+    ================================ */
     let refreshCount = 0;
     let refreshTimer = null;
     function refreshImages() {
-      // 刷新图片
+      // 刷新卡片图片
       document.querySelectorAll('.card-front img').forEach(img => {
         img.src = img.src;
       });
@@ -448,20 +609,47 @@
       }
     }
     function oneKeyComplete() {
-      // 一键通关
-      document.querySelectorAll('.card:not(.blank)').forEach(c => {
-        c.classList.add('flipped');
-        c.classList.add('matched');
+      // 所有非空卡片直接翻开并matched
+      document.querySelectorAll('.card:not(.blank)').forEach(card => {
+        card.classList.add('flipped');
+        card.classList.add('matched');
       });
-      // 直接结束关卡
-      const total = cardGrid.children.length;
+      // 解锁图鉴
+      let total = cardGrid.children.length;
       matchedPairs = total / 2;
       stepCount++;
-      stepCountElement.textContent = stepCount;
+      stepCountEl.textContent = stepCount.toString();
+      // 全部图片添加到 unlockedImages
+      let frontImages = document.querySelectorAll('.card-front img');
+      frontImages.forEach(img => unlockedImages.add(img.src));
       endLevel();
     }
 
-    // ========== 初始化 ==========
+    /* ================================
+       其他按钮功能
+    ================================ */
+    function goBack() {
+      alert("返回上一页示例");
+    }
+    function openSettings() {
+      alert("打开设置示例");
+    }
+    function goHome() {
+      alert("返回主画面示例");
+    }
+
+    /* ================================
+       工具函数
+    ================================ */
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // 初始化
     initLevel();
   </script>
 </body>
