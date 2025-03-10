@@ -3,19 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>翻牌消消乐 - 步数规则</title>
+  <title>FUNNER 翻乐</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
+      padding-bottom: 20px;
     }
-    /* 顶部栏：左侧版本号，右侧刷新图标 */
+    /* 全屏加载动画区域，使用新提供的视频 */
+    #loadingScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #loadingScreen video {
+      width: 90%;
+      max-width: 600px;
+    }
+    /* 顶部栏 */
     .top-bar {
       width: 100%;
       max-width: 500px;
@@ -25,22 +42,49 @@
       padding: 10px;
       background: #fff;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 5;
     }
     .version { font-size: 14px; color: gray; }
-    .refresh-btn {
+    .top-icons {
+      display: flex;
+      gap: 10px;
+    }
+    .top-icons button {
       background: none;
       border: none;
       font-size: 20px;
       cursor: pointer;
     }
-    /* 主界面 */
+    /* 主界面：取消背景图片，改为独立图片展示 */
     .main-menu {
       width: 100%;
       max-width: 500px;
-      text-align: center;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
       margin-top: 30px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
     }
-    .main-menu button {
+    .menu-bg {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      margin: 0 auto 20px;
+      display: block;
+    }
+    .menu-content h1 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .menu-content p {
+      margin-bottom: 15px;
+      color: #555;
+    }
+    .menu-content button {
       padding: 10px 20px;
       font-size: 18px;
       cursor: pointer;
@@ -56,6 +100,17 @@
       text-align: center;
       margin: 10px 0;
       font-size: 16px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .game-info button.refresh-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 10px;
     }
     /* 卡片网格 */
     .card-grid {
@@ -84,14 +139,8 @@
       transition: transform 0.3s ease;
       border-radius: 5px;
     }
-    .card.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
-    .card.matched .card-inner {
-      transform: rotateY(180deg);
-      pointer-events: none;
-      opacity: 0.7;
-    }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
+    .card.matched .card-inner { transform: rotateY(180deg); pointer-events: none; }
     .card-face {
       position: absolute;
       width: 100%;
@@ -113,8 +162,10 @@
       height: 100%;
       object-fit: cover;
     }
+    /* 更新卡牌背面使用新资源 */
     .card-back {
-      background: #4CAF50;
+      background: url("https://storage.googleapis.com/atlas-funner-1/logo%E5%9B%BE%E7%89%87.jpg") no-repeat center center;
+      background-size: cover;
     }
     /* 通关提示 */
     #winMessage {
@@ -161,25 +212,73 @@
       border-radius: 5px;
       cursor: pointer;
     }
+    /* 模态框样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 20;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 10px;
+      position: relative;
+    }
+    .close {
+      color: #aaa;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover, .close:focus { color: black; }
   </style>
 </head>
 <body>
+  <!-- 加载动画区域，使用新提供的 .mov 视频 -->
+  <div id="loadingScreen">
+    <video autoplay muted playsinline loop>
+      <source src="https://storage.googleapis.com/atlas-funner-1/%E6%B8%B8%E6%88%8F%E8%BF%9B%E5%85%A5.mov" type="video/quicktime">
+      您的浏览器不支持视频播放。
+    </video>
+  </div>
+
   <!-- 顶部栏 -->
   <div class="top-bar">
-    <div class="version">版本号：20250309-3</div>
-    <button class="refresh-btn" onclick="refreshImages()">⟳</button>
+    <div class="version">版本号：加载中...</div>
+    <div class="top-icons">
+      <button class="help-btn" onclick="showHelp()">❓</button>
+      <button class="settings-btn" onclick="showSettings()">⚙</button>
+    </div>
   </div>
 
-  <!-- 主界面（初始显示） -->
-  <div class="main-menu" id="mainMenu">
-    <h1>翻牌消消乐</h1>
-    <p>步数规则：每翻两张卡牌算一步</p>
-    <button onclick="startGame()">开始游戏</button>
+  <!-- 主界面 -->
+  <div class="main-menu" id="mainMenu" style="display:none;">
+    <!-- 使用新主画面 logo 作为独立图片 -->
+    <img src="https://storage.googleapis.com/atlas-funner-1/%E6%B8%B8%E6%88%8F%E4%B8%BB%E7%94%BB%E9%9D%A2logo.png" alt="主画面Logo" class="menu-bg">
+    <div class="menu-content">
+      <h1>FUNNER 翻乐</h1>
+      <p>步数规则：每翻两张卡牌算一步</p>
+      <button onclick="startGame()">开始游戏</button>
+    </div>
   </div>
 
-  <!-- 游戏信息（步数、关卡） -->
+  <!-- 游戏信息 -->
   <div class="game-info" id="gameInfo" style="display:none;">
     关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
+    <button class="refresh-btn" onclick="refreshImages()">⟳</button>
   </div>
 
   <!-- 卡片网格 -->
@@ -189,7 +288,6 @@
   <div id="winMessage">
     <h2>恭喜通关！</h2>
     <p>本关步数：<span id="finalSteps">0</span></p>
-    <!-- 第三关显示排行榜 -->
     <div id="leaderboard" style="display:none;">
       <h3>排行榜（第三关）</h3>
       <ul id="leaderboardList"></ul>
@@ -204,9 +302,57 @@
     <button onclick="showGallery()">图鉴</button>
   </div>
 
+  <!-- 图鉴模态框 -->
+  <div id="galleryModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeGallery()">&times;</span>
+      <h2>图鉴</h2>
+      <div id="galleryContent" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+    </div>
+  </div>
+
+  <!-- 图片详情模态框（显示高清大图及描述） -->
+  <div id="imageDetailModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeImageDetail()">&times;</span>
+      <div id="imageDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- 帮助模态框 -->
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeHelp()">&times;</span>
+      <h2>游戏规则说明</h2>
+      <p>1. 游戏玩法：翻开两张卡牌进行配对，若配对成功则卡牌保持正面，若配对失败则翻回背面。</p>
+      <p>2. 步数计算：每翻两张卡牌计为一步，步数越少代表表现越好。</p>
+      <p>3. 第三关：从第三关开始，不再提供3秒预览，卡牌将直接以覆盖状态开始，增加游戏挑战性。</p>
+      <p>4. 开发者功能：连续点击刷新按钮5次可触发一键通关。</p>
+    </div>
+  </div>
+
+  <!-- 背景音乐（使用新链接，若直接播放有问题，请考虑转换为直链或使用嵌入组件） -->
+  <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/funner%20bgm.MP3" loop></audio>
+  <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
+
   <script>
     /* ================================
-       数据配置
+       动态更新版本号
+    ================================ */
+    function updateVersion() {
+      const now = new Date();
+      const version = now.getFullYear().toString() +
+        ('0' + (now.getMonth() + 1)).slice(-2) +
+        ('0' + now.getDate()).slice(-2) + '-' +
+        ('0' + now.getHours()).slice(-2) +
+        ('0' + now.getMinutes()).slice(-2) +
+        ('0' + now.getSeconds()).slice(-2);
+      document.querySelector('.version').textContent = "版本号：" + version;
+    }
+    updateVersion();
+
+    /* ================================
+       全局配置
     ================================ */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
@@ -230,26 +376,44 @@
     ];
     const defaultImage = "https://via.placeholder.com/80?text=?";
 
-    // 游戏关卡配置
-    // 第一关：16格（4x4），第二关：25格（5x5，中心空白），第三关：36格（6x6）
+    // 游戏关卡配置：第一关 4x4，第二关 5x5（中间空白），第三关 6x6
     let currentLevel = 1;
     const maxLevel = 3;
-
-    // 步数记录（每翻两张算一步）
     let stepCount = 0;
-
     let matchedPairs = 0;
     let flippedCards = [];
     let lockBoard = false;
+    let refreshClickCount = 0;
+    let refreshTimer;
 
     // 第三关排行榜（步数越少越靠前，保留前5）
     let leaderboard = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
-
-    // 图鉴系统：已解锁的图片（配对成功）
+    // 图鉴系统：记录已解锁图片（配对成功）
     let unlockedImages = new Set();
+    // 图片文字描述（系统生成的理解文字）
+    const imageDescriptions = {
+      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg': '这是一只活泼的小丑鱼，充满海洋活力。',
+      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg': '另一只小丑鱼，展现了独特的海底风情。',
+      'https://www.cmfish.com/kinds/fish_s/diao.jpg': '神秘的鱼类，其流畅线条透露着奇特韵味。',
+      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg': '精致的海洋生物，仿佛艺术品般令人赞叹。',
+      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg': '细腻的色彩搭配，展现了海底的独特魅力。',
+      'https://www.cmfish.com/kinds/fish_s/lion.jpg': '威猛的海洋狮鱼，象征着力量与霸气。',
+      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg': '独特花纹的鱼类，仿佛在诉说海底秘密。',
+      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg': '神秘的紫色调，散发着迷人的魅力。',
+      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg': '优雅的海洋精灵，如月光般温柔。',
+      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg': '精致的海马，形态奇特令人喜爱。',
+      'https://www.cmfish.com/kinds/fish_s/hailong.jpg': '气势磅礴的海龙，掌控着海域的力量。',
+      'https://www.cmfish.com/kinds/fish_s/shark.jpg': '凶猛的鲨鱼，代表海洋的野性。',
+      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg': '虎纹斑斓的小虎鱼，充满灵动魅力。',
+      'https://www.cmfish.com/kinds/fish_s/leida.jpg': '雷达鱼捕捉海底动静，其科技感与神秘并存。',
+      'https://www.cmfish.com/kinds/fish_s/huli.jpg': '狐狸鱼眼神狡黠，散发着智慧气息。',
+      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg': '天珠鱼神秘闪烁，仿佛蕴含天外之力。',
+      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg': '趣味十足的青蛙鱼，外观别致令人会心一笑。',
+      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg': '牛角鱼独特的角状鳍，展示野性与力量。'
+    };
 
     /* ================================
-       DOM 元素
+       DOM 元素引用
     ================================ */
     const levelEl = document.getElementById('level');
     const stepCountEl = document.getElementById('stepCount');
@@ -257,7 +421,6 @@
     const winMessage = document.getElementById('winMessage');
     const finalStepsEl = document.getElementById('finalSteps');
     const leaderboardList = document.getElementById('leaderboardList');
-    const leaderboardDiv = document.getElementById('leaderboard');
     const mainMenu = document.getElementById('mainMenu');
 
     /* ================================
@@ -266,13 +429,13 @@
     function initLevel() {
       let cols, rows;
       if (currentLevel === 1) {
-        cols = 4; rows = 4; // 16格
+        cols = 4; rows = 4;
         levelEl.textContent = "1";
       } else if (currentLevel === 2) {
-        cols = 5; rows = 5; // 25格，中心为空
+        cols = 5; rows = 5;
         levelEl.textContent = "2";
       } else {
-        cols = 6; rows = 6; // 36格
+        cols = 6; rows = 6;
         levelEl.textContent = "3";
       }
       stepCount = 0;
@@ -282,19 +445,17 @@
       lockBoard = true;
       winMessage.style.display = 'none';
       cardGrid.innerHTML = '';
+      cardGrid.classList.remove('hidden');
       cardGrid.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
 
       let totalCells = cols * rows;
-      let pairs = (currentLevel === 2) ? 12 : totalCells / 2; // 第二关实际可配对12组
-      // 取前 pairs 张图片（确保图片不重复出现）
+      let pairs = (currentLevel === 2) ? 12 : totalCells / 2;
       let selected = imagesPool.slice(0, pairs);
       let cardImages = [...selected, ...selected];
 
-      // 对于第二关，构建5x5数组，其中中间位置固定为空白
+      // 第二关中间固定为空白
       if (currentLevel === 2) {
-        // 先打乱配对卡片
         shuffleArray(cardImages);
-        // 生成一个长度为25的数组，将中间(索引12)置为 null，其余位置按顺序填入 cardImages 的值
         let grid = [];
         let index = 0;
         for (let i = 0; i < totalCells; i++) {
@@ -313,13 +474,17 @@
         cardGrid.appendChild(createCard(imgUrl));
       });
 
-      // 开始前3秒预览
-      const allCards = document.querySelectorAll('.card:not(.blank)');
-      allCards.forEach(card => card.classList.add('flipped'));
-      setTimeout(() => {
-        allCards.forEach(card => card.classList.remove('flipped'));
+      // 若非第三关则提供3秒预览；第三关则直接开始
+      if (currentLevel === 3) {
         lockBoard = false;
-      }, 3000);
+      } else {
+        const allCards = document.querySelectorAll('.card:not(.blank)');
+        allCards.forEach(card => card.classList.add('flipped'));
+        setTimeout(() => {
+          allCards.forEach(card => card.classList.remove('flipped'));
+          lockBoard = false;
+        }, 3000);
+      }
     }
 
     /* ================================
@@ -366,7 +531,7 @@
         second.card.classList.add('matched');
         matchedPairs++;
         playMatchSound();
-        // 解锁图鉴
+        // 记录已解锁图片
         unlockedImages.add(first.imgUrl);
         if (isLevelComplete()) endLevel();
       } else {
@@ -379,16 +544,14 @@
 
     function isLevelComplete() {
       let total = cardGrid.children.length;
-      let available = currentLevel === 2 ? total - 1 : total; // 第二关扣除空白
+      let available = currentLevel === 2 ? total - 1 : total;
       return matchedPairs === available / 2;
     }
 
     function endLevel() {
-      // 显示通关提示及步数
-      document.getElementById('finalSteps') && (document.getElementById('finalSteps').textContent = stepCount);
+      if (finalStepsEl) finalStepsEl.textContent = stepCount;
       winMessage.style.display = 'block';
       if (currentLevel === 3) {
-        // 保存第三关排行榜
         leaderboard.push(stepCount);
         leaderboard.sort((a, b) => a - b);
         leaderboard = leaderboard.slice(0, 5);
@@ -402,7 +565,7 @@
     }
 
     /* ================================
-       排行榜及图鉴（示例）
+       排行榜及其他界面
     ================================ */
     function renderLeaderboard() {
       leaderboardList.innerHTML = '';
@@ -412,16 +575,13 @@
         leaderboardList.appendChild(li);
       });
     }
-    // 图鉴系统（点击底部“图鉴”按钮打开，示例实现）
-    function showGallery() {
-      alert("打开图鉴界面（示例）");
-    }
+    function showLeaderboard() { alert("排行榜界面（示例）"); }
+    function showSettings() { alert("设置界面（待开发）"); }
+    function goHome() { location.reload(); }
 
     /* ================================
-       刷新按钮（刷新异常图片，并提供开发者一键通关）
+       刷新按钮及开发者快速通关功能
     ================================ */
-    let refreshClickCount = 0;
-    let refreshTimer;
     function refreshImages() {
       document.querySelectorAll('.card-front img').forEach(img => {
         img.src = img.src;
@@ -446,7 +606,6 @@
       document.querySelectorAll('.card-front img').forEach(img => unlockedImages.add(img.src));
       endLevel();
     }
-
     function playMatchSound() {
       const sound = document.getElementById('matchSound');
       sound.currentTime = 0;
@@ -454,7 +613,47 @@
     }
 
     /* ================================
-       下一关 & 主界面
+       图鉴系统
+    ================================ */
+    function showGallery() {
+      const galleryContent = document.getElementById('galleryContent');
+      galleryContent.innerHTML = '';
+      if (unlockedImages.size === 0) {
+        galleryContent.innerHTML = '<p>暂无解锁图片</p>';
+      } else {
+        unlockedImages.forEach(imgUrl => {
+          const imgElem = document.createElement('img');
+          imgElem.src = imgUrl;
+          imgElem.style.width = '80px';
+          imgElem.style.height = '80px';
+          imgElem.style.objectFit = 'cover';
+          imgElem.style.cursor = 'pointer';
+          imgElem.onclick = function() { showImageDetail(imgUrl); };
+          galleryContent.appendChild(imgElem);
+        });
+      }
+      document.getElementById('galleryModal').style.display = 'block';
+    }
+    function closeGallery() { document.getElementById('galleryModal').style.display = 'none'; }
+    // 图鉴详情：显示高清大图及系统生成的描述
+    function showImageDetail(imgUrl) {
+      const description = imageDescriptions[imgUrl] || "这是一张精美的图片，展现了海洋生物的独特魅力。";
+      document.getElementById('imageDetailContent').innerHTML = `
+        <img src="${imgUrl}" style="width:100%; max-width:400px; display:block; margin:0 auto;">
+        <p style="text-align:center; margin-top:10px;">${description}</p>
+      `;
+      document.getElementById('imageDetailModal').style.display = 'block';
+    }
+    function closeImageDetail() { document.getElementById('imageDetailModal').style.display = 'none'; }
+
+    /* ================================
+       帮助模态框
+    ================================ */
+    function showHelp() { document.getElementById('helpModal').style.display = 'block'; }
+    function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
+
+    /* ================================
+       下一关 & 游戏启动
     ================================ */
     function nextLevel() {
       currentLevel++;
@@ -463,14 +662,12 @@
       initLevel();
     }
     function startGame() {
-      // 隐藏主界面，显示游戏界面
-      document.getElementById('mainMenu').style.display = 'none';
+      mainMenu.style.display = 'none';
       document.getElementById('gameInfo').style.display = 'block';
       initLevel();
-    }
-    function goHome() {
-      // 返回主界面（示例）
-      location.reload();
+      // 播放背景音乐（确保用户交互后播放，否则部分浏览器可能阻止自动播放）
+      const bgMusic = document.getElementById('bgMusic');
+      bgMusic.play().catch(() => {});
     }
 
     /* ================================
@@ -485,20 +682,15 @@
     }
 
     /* ================================
-       初始化：显示主界面
+       加载动画处理
     ================================ */
-    // 主界面 HTML示例：
-    const mainMenuHTML = `
-      <div id="mainMenu" class="main-menu">
-        <h1>翻牌消消乐</h1>
-        <p>步数规则：每翻两张卡牌算一步</p>
-        <button class="button" onclick="startGame()">开始游戏</button>
-      </div>
-      <div id="gameInfo" class="game-info" style="display:none;">
-        关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
-      </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', mainMenuHTML);
+    window.addEventListener('load', () => {
+      // 模拟加载完成后隐藏加载动画
+      setTimeout(() => {
+        document.getElementById('loadingScreen').style.display = 'none';
+        mainMenu.style.display = 'block';
+      }, 1000);
+    });
   </script>
 </body>
 </html>
