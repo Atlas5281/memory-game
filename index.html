@@ -713,9 +713,7 @@
       return array;
     }
 
-    /* 取消登录系统：移除设置模块相关代码 */
-
-    /* 等待画面处理 */
+    /* 取消登录系统：直接进入等待画面 */
     function proceedToWaitingScreen() {
       const waitingScreen = document.getElementById('waitingScreen');
       waitingScreen.style.display = 'block';
@@ -728,7 +726,7 @@
       }
     }
 
-    /* 加载画面处理：监听视频加载并结束后进入等待画面；不再播放单独的加载音效 */
+    /* 加载画面处理：监听视频加载并结束后进入等待画面 */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
