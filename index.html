@@ -238,7 +238,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* 模态框样式（排行榜、帮助、图鉴、图片详情、设置） */
+    /* 模态框样式（排行榜、帮助、图鉴、图片详情） */
     .modal {
       display: none;
       position: fixed;
@@ -273,20 +273,17 @@
   </style>
 </head>
 <body>
-  <!-- 加载画面 -->
+  <!-- 加载画面（播放指定 MP4，包括视频自带的声音） -->
   <div id="loadingScreen">
-    <video autoplay playsinline muted preload="auto">
+    <video autoplay playsinline preload="auto">
       <source src="https://storage.googleapis.com/atlas-funner-1/%E8%BD%BD%E5%85%A5%E7%94%BB%E9%9D%A2%E5%B8%A6%E9%9F%B3%E6%95%880310.mp4" type="video/mp4">
       您的浏览器不支持视频播放。
     </video>
   </div>
-  <!-- 加载画面音效 -->
-  <audio id="loadingSound" src="https://storage.googleapis.com/atlas-funner-1/%E6%B8%B8%E6%88%8F%E5%8A%A0%E8%BD%BD%E7%94%BB%E9%9D%A2%E9%9F%B3%E6%95%88.MP3" preload="auto"></audio>
 
   <!-- 等待画面 -->
   <div id="waitingScreen">
     <div class="waiting-text">点击任意处进入主画面</div>
-    <!-- 等待画面音效更新为指定链接 -->
     <audio id="waitingMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%20%E4%B8%BB%E9%A2%98%E6%9B%B2.mp3" loop></audio>
   </div>
 
@@ -295,7 +292,6 @@
     <div class="version">版本号：加载中...</div>
     <div class="top-icons">
       <button class="help-btn" onclick="showHelp()">❓</button>
-      <button class="settings-btn" onclick="showSettings()">⚙</button>
     </div>
   </div>
 
@@ -371,29 +367,6 @@
       <span class="close" onclick="closeLeaderboard()">&times;</span>
       <h2>排行榜</h2>
       <ul id="leaderboardFullList"></ul>
-    </div>
-  </div>
-
-  <!-- 设置模态框：包含背景音乐音量和用户信息（登录接口留空，后续对接微信/支付宝/手机号） -->
-  <div id="settingsModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeSettings()">&times;</span>
-      <h2>设置</h2>
-      <label for="bgVolume">背景音乐音量</label>
-      <input type="range" id="bgVolume" min="0" max="1" step="0.01" value="1" />
-      <hr>
-      <h3>用户信息</h3>
-      <label for="profileNickname">昵称:</label>
-      <input type="text" id="profileNickname" placeholder="请输入昵称" style="width:100%; margin-bottom:10px;" />
-      <br/>
-      <label for="profileAvatar">头像链接:</label>
-      <input type="text" id="profileAvatar" placeholder="请输入头像链接" style="width:100%; margin-bottom:10px;" />
-      <br/>
-      <!-- 登录标识接口暂缓接入，如未填写则使用默认 "stub" -->
-      <label for="loginIdentifier">登录标识（微信/支付宝/手机号，暂缓对接）：</label>
-      <input type="text" id="loginIdentifier" placeholder="留空或输入" style="width:100%; margin-bottom:10px;" />
-      <br/>
-      <button onclick="saveProfile()">保存并登录</button>
     </div>
   </div>
 
@@ -602,8 +575,8 @@
       finalStepsEl.textContent = stepCount;
       winMessage.style.display = 'block';
       if (currentLevel === 3) {
-        let user = getCurrentUser() || { id: "stub", nickname: "匿名", avatar: "" };
-        leaderboard.push({ score: stepCount, nickname: user.nickname, avatar: user.avatar, userId: user.id });
+        // 记录排行榜（用户信息部分暂不使用）
+        leaderboard.push({ score: stepCount, nickname: "匿名", avatar: "", userId: "stub" });
         leaderboard.sort((a, b) => a.score - b.score);
         localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
         document.getElementById('leaderboard').style.display = 'block';
@@ -647,8 +620,6 @@
     }
 
     function closeLeaderboard() { document.getElementById('leaderboardModal').style.display = 'none'; }
-    function showSettings() { document.getElementById('settingsModal').style.display = 'block'; }
-    function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
     function goHome() { location.reload(); }
 
     function refreshImages() {
@@ -724,7 +695,7 @@
       initLevel();
     }
     function startGame() {
-      // 当用户点击开始游戏时，关闭等待画面音效（如果正在播放）
+      // 用户点击开始游戏时，关闭等待画面背景音乐
       const waitingMusic = document.getElementById('waitingMusic');
       waitingMusic.pause();
       mainMenu.style.display = 'none';
@@ -742,20 +713,7 @@
       return array;
     }
 
-    /* 用户信息处理：保存在设置界面中，登录接口暂缓（留有接口供后续扩展） */
-    function getCurrentUser() {
-      return JSON.parse(localStorage.getItem('currentUser'));
-    }
-    function saveProfile() {
-      const nickname = document.getElementById('profileNickname').value.trim() || "匿名";
-      const avatar = document.getElementById('profileAvatar').value.trim() || "";
-      let loginId = document.getElementById('loginIdentifier').value.trim();
-      if (!loginId) { loginId = "stub"; }
-      const user = { id: loginId, nickname, avatar };
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      closeSettings();
-      proceedToWaitingScreen();
-    }
+    /* 取消登录系统：移除设置模块相关代码 */
 
     /* 等待画面处理 */
     function proceedToWaitingScreen() {
@@ -764,46 +722,30 @@
       const waitingMusic = document.getElementById('waitingMusic');
       waitingMusic.play().catch(() => {});
       waitingScreen.onclick = function() {
-        // 当用户点击等待画面时，关闭等待音效并进入主界面
         waitingMusic.pause();
         waitingScreen.style.display = 'none';
         mainMenu.style.display = 'block';
       }
     }
 
-    /* 加载画面处理：监听视频加载并启动加载音效，同时备用超时10秒 */
+    /* 加载画面处理：监听视频加载并结束后进入等待画面；不再播放单独的加载音效 */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
-      const mainMenu = document.getElementById('mainMenu');
       const loadingVideo = document.querySelector('#loadingScreen video');
-      const loadingSound = document.getElementById('loadingSound');
 
       loadingVideo.addEventListener('canplaythrough', () => {
-        // 尝试播放加载音效
-        loadingSound.play().catch((e) => console.log("加载音效播放失败：", e));
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
-          const user = getCurrentUser();
-          if (user) { 
-            proceedToWaitingScreen(); 
-          } else { 
-            showSettings();
-          }
+          proceedToWaitingScreen();
         };
       });
-      // 备用超时：10秒后若加载画面仍在，则关闭加载画面并判断用户信息
+      // 备用超时：10秒后若加载画面仍在，则关闭加载画面并直接进入等待画面
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
-          const user = getCurrentUser();
-          if (user) { proceedToWaitingScreen(); }
-          else { showSettings(); }
+          proceedToWaitingScreen();
         }
       }, 10000);
-
-      document.getElementById('bgVolume').addEventListener('input', function() {
-        document.getElementById('bgMusic').volume = this.value;
-      });
     });
   </script>
 </body>
