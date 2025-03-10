@@ -17,6 +17,24 @@
       position: relative;
       padding-bottom: 20px;
     }
+    /* 启动交互层 */
+    #startOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      z-index: 200;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    #startOverlay .start-text {
+      font-size: 24px;
+      color: #333;
+    }
     /* 加载画面：背景白色，仅显示视频，无任何外框 */
     #loadingScreen {
       position: fixed;
@@ -273,6 +291,11 @@
   </style>
 </head>
 <body>
+  <!-- 启动交互层：首次点击触发音频播放权限 -->
+  <div id="startOverlay">
+    <div class="start-text">点击任意处开始</div>
+  </div>
+  
   <!-- 加载画面（播放指定 MP4，包括视频自带的声音） -->
   <div id="loadingScreen">
     <video autoplay playsinline preload="auto">
@@ -280,7 +303,7 @@
       您的浏览器不支持视频播放。
     </video>
   </div>
-
+  
   <!-- 等待画面 -->
   <div id="waitingScreen">
     <div class="waiting-text">点击任意处进入主画面</div>
@@ -375,6 +398,11 @@
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
 
   <script>
+    /* 启动交互：要求用户点击后再开始加载流程，触发音频播放权限 */
+    document.getElementById("startOverlay").addEventListener("click", function() {
+      this.style.display = "none";
+    });
+
     /* 动态更新版本号 */
     function updateVersion() {
       const now = new Date();
@@ -575,7 +603,7 @@
       finalStepsEl.textContent = stepCount;
       winMessage.style.display = 'block';
       if (currentLevel === 3) {
-        // 记录排行榜（用户信息部分暂不使用）
+        // 记录排行榜（此处使用默认“匿名”）
         leaderboard.push({ score: stepCount, nickname: "匿名", avatar: "", userId: "stub" });
         leaderboard.sort((a, b) => a.score - b.score);
         localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
@@ -713,7 +741,7 @@
       return array;
     }
 
-    /* 取消登录系统：直接进入等待画面 */
+    /* 等待画面处理 */
     function proceedToWaitingScreen() {
       const waitingScreen = document.getElementById('waitingScreen');
       waitingScreen.style.display = 'block';
@@ -726,18 +754,17 @@
       }
     }
 
-    /* 加载画面处理：监听视频加载并结束后进入等待画面 */
+    /* 加载画面处理 */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
-
       loadingVideo.addEventListener('canplaythrough', () => {
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
           proceedToWaitingScreen();
         };
       });
-      // 备用超时：10秒后若加载画面仍在，则关闭加载画面并直接进入等待画面
+      // 备用超时：10秒后若加载画面仍在，则直接进入等待画面
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
