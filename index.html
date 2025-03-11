@@ -13,7 +13,7 @@
       background-color: #f0f0f0;
       position: relative;
     }
-    /* 登入画面：全屏背景，提示文字位于下方 */
+    /* 登入画面 */
     #loginScreen {
       position: fixed;
       top: 0; left: 0;
@@ -24,6 +24,7 @@
       z-index: 300;
       cursor: pointer;
     }
+    /* “点击任意处开始”提示放在下方 */
     #loginScreen .login-text {
       position: absolute;
       bottom: 20px;
@@ -33,7 +34,7 @@
       color: #fff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    /* 加载画面：全屏白底，播放加载视频 */
+    /* 加载画面 */
     #loadingScreen {
       position: fixed;
       top: 0; left: 0;
@@ -52,20 +53,19 @@
       outline: none !important;
       box-shadow: none !important;
       display: block;
-      /* 不再设置 muted，以便视频内嵌声音播放 */
+      /* 注意：此处不设置 muted，确保视频内嵌声音正常播放 */
     }
-    /* 主画面：背景图片满屏显示（16:9），适配手机 */
+    /* 主画面：背景图满布整个16:9区域，适配手机 */
     #mainMenu {
       display: none;
       position: relative;
       width: 100%;
-      /* 高度按16:9比例计算 */
       height: calc(100vw * 9 / 16);
       background: url("https://storage.googleapis.com/atlas-funner-1/%E4%B8%BB%E7%94%BB%E9%9D%A2.png") no-repeat center center;
       background-size: cover;
       z-index: 100;
     }
-    /* 主画面内覆盖层：按钮及版本号 */
+    /* 主画面内覆盖层：放置各功能按键及版本号 */
     .menu-content {
       position: absolute;
       bottom: 20px;
@@ -102,7 +102,7 @@
       border-radius: 5px;
       z-index: 110;
     }
-    /* 以下保持原有游戏逻辑样式（游戏信息、卡片网格、通关提示） */
+    /* 以下为游戏逻辑区域（游戏信息、卡片、排行榜等）——保持原有样式 */
     .game-info {
       width: 100%;
       max-width: 500px;
@@ -270,15 +270,14 @@
     <div class="menu-content">
       <h1>FUNNER 翻乐</h1>
       <p>步数规则：每翻两张卡牌算一步</p>
-      <button onclick="startGame()">开始游戏</button>
-      <br><br>
-      <button onclick="showGallery()">图鉴</button>
-      <button onclick="showLeaderboard()">排行榜</button>
-      <button onclick="goHome()">主画面</button>
+      <button id="btnStart" onclick="startGame()">开始游戏</button>
+      <button id="btnGallery" onclick="showGallery()">图鉴</button>
+      <button id="btnLeaderboard" onclick="showLeaderboard()">排行榜</button>
+      <button id="btnHome" onclick="goHome()">主画面</button>
     </div>
   </div>
   
-  <!-- 游戏信息及其他游戏逻辑区域（保持原有） -->
+  <!-- 游戏信息、卡片网格、通关提示（原有逻辑区域） -->
   <div class="game-info" id="gameInfo" style="display:none;">
     关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
     <button class="refresh-btn" onclick="refreshImages()">⟳</button>
@@ -340,20 +339,18 @@
     </div>
   </div>
   
-  <!-- 主题曲：在登入画面点击后开始播放，并持续到进入游戏关卡 -->
+  <!-- 主题曲：点击登入后开始播放并持续至进入游戏关卡 -->
   <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/%E7%A9%BA%E7%99%BD6%E7%A7%92%E4%B8%BB%E9%A2%98%E6%9B%B2.MP3" loop></audio>
   <!-- 游戏背景音乐：进入游戏关卡后播放 -->
   <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%E7%89%87%E5%B0%BE.mp3" loop></audio>
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
   
   <script>
-    /* 登入画面处理：点击后隐藏登入画面，显示加载画面，同时启动主题曲 */
+    /* 登入画面：点击后隐藏并启动主题曲与加载画面 */
     document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
-      // 开始播放主题曲（主题曲权限由用户交互触发）
       const themeMusic = document.getElementById("themeMusic");
       themeMusic.play().catch(e => console.log("主题曲播放失败：", e));
-      // 显示加载画面
       document.getElementById("loadingScreen").style.display = "flex";
       const loadingVideo = document.querySelector("#loadingScreen video");
       loadingVideo.play().catch(e => console.log("加载视频播放失败：", e));
@@ -372,7 +369,34 @@
     }
     updateVersion();
   
-    /* 全局配置与变量（游戏关卡逻辑保持原有） */
+    /* 主画面按钮图片替换功能配置
+       若 image 字段为空，则使用 fallback 颜色作为背景（此处仅显示文字） */
+    var buttonConfig = {
+      btnStart: { image: "", width: "150px", height: "50px", fallback: "#4CAF50", text: "开始游戏" },
+      btnGallery: { image: "", width: "120px", height: "40px", fallback: "#4CAF50", text: "图鉴" },
+      btnLeaderboard: { image: "", width: "120px", height: "40px", fallback: "#4CAF50", text: "排行榜" },
+      btnHome: { image: "", width: "120px", height: "40px", fallback: "#4CAF50", text: "主画面" }
+    };
+    function updateButtonImages() {
+      for (var btnId in buttonConfig) {
+        var btn = document.getElementById(btnId);
+        var cfg = buttonConfig[btnId];
+        btn.style.width = cfg.width;
+        btn.style.height = cfg.height;
+        if (cfg.image) {
+          btn.style.backgroundImage = "url(" + cfg.image + ")";
+          btn.style.backgroundSize = "contain";
+          btn.style.backgroundRepeat = "no-repeat";
+          btn.style.backgroundPosition = "center";
+          btn.textContent = "";
+        } else {
+          btn.style.background = cfg.fallback;
+          btn.textContent = cfg.text;
+        }
+      }
+    }
+  
+    /* 以下为游戏逻辑及关卡代码（保持原有逻辑） */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -677,7 +701,7 @@
       initLevel();
     }
     function startGame() {
-      // 用户点击“开始游戏”时，切换音乐：停止主题曲，播放游戏背景音乐
+      // 用户点击“开始游戏”时：停止主题曲，启动游戏背景音乐，进入游戏关卡
       const themeMusic = document.getElementById('themeMusic');
       themeMusic.pause();
       const gameMusic = document.getElementById('gameMusic');
@@ -695,7 +719,7 @@
       return array;
     }
   
-    /* 加载画面处理：监听视频播放完毕后自动进入主画面，并启动主画面背景音乐（主题曲持续播放） */
+    /* 加载画面处理：监听视频播放完毕后进入主画面 */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
@@ -703,15 +727,17 @@
       loadingVideo.addEventListener('canplaythrough', () => {
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
-          // 主画面显示时继续播放主题曲（已在登入时启动）
           document.getElementById('mainMenu').style.display = 'block';
+          // 更新主画面按钮（图片替换配置）
+          updateButtonImages();
         };
       });
-      // 备用超时：10秒后若加载画面仍在，则直接进入主画面
+      // 备用超时：10秒后若加载画面仍显示，则直接进入主画面
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
           document.getElementById('mainMenu').style.display = 'block';
+          updateButtonImages();
         }
       }, 10000);
     });
