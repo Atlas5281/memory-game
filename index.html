@@ -13,7 +13,7 @@
       background-color: #f0f0f0;
       position: relative;
     }
-    /* 登入画面：全屏背景图片（使用指定登入画面资源），提示文字放在下方 */
+    /* 登入画面：全屏背景，提示文字位于下方 */
     #loginScreen {
       position: fixed;
       top: 0; left: 0;
@@ -33,7 +33,7 @@
       color: #fff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    /* 加载画面 */
+    /* 加载画面：全屏白底，播放加载视频 */
     #loadingScreen {
       position: fixed;
       top: 0; left: 0;
@@ -52,25 +52,25 @@
       outline: none !important;
       box-shadow: none !important;
       display: block;
+      /* 不再设置 muted，以便视频内嵌声音播放 */
     }
-    /* 主画面：背景图满布整个16:9画面，适配手机 */
+    /* 主画面：背景图片满屏显示（16:9），适配手机 */
     #mainMenu {
       display: none;
       position: relative;
       width: 100%;
-      /* 高度按16:9比例，注意在手机上效果最佳 */
+      /* 高度按16:9比例计算 */
       height: calc(100vw * 9 / 16);
       background: url("https://storage.googleapis.com/atlas-funner-1/%E4%B8%BB%E7%94%BB%E9%9D%A2.png") no-repeat center center;
       background-size: cover;
       z-index: 100;
     }
-    /* 主画面内覆盖层：放置按键及版本号，按键只显示文字 */
+    /* 主画面内覆盖层：按钮及版本号 */
     .menu-content {
       position: absolute;
       bottom: 20px;
       width: 100%;
       text-align: center;
-      background: transparent;
     }
     .menu-content h1 {
       margin-bottom: 10px;
@@ -102,7 +102,7 @@
       border-radius: 5px;
       z-index: 110;
     }
-    /* 以下保持原有游戏逻辑样式（游戏信息、卡片网格、通关提示等） */
+    /* 以下保持原有游戏逻辑样式（游戏信息、卡片网格、通关提示） */
     .game-info {
       width: 100%;
       max-width: 500px;
@@ -259,7 +259,7 @@
   <!-- 加载画面 -->
   <div id="loadingScreen">
     <video autoplay playsinline preload="auto">
-      <source src="https://storage.googleapis.com/atlas-funner-1/%E8%BD%BD%E5%85%A5%E7%94%BB%E9%9D%A2%E5%B8%A6%E9%9F%B3%E6%95%880310.mp4" type="video/mp4">
+      <source src="https://storage.googleapis.com/atlas-funner-1/%E5%8A%A0%E8%BD%BD%E7%94%BB%E9%9D%A2%E5%B8%A6%E9%9F%B3%E6%95%880311.mp4" type="video/mp4">
       您的浏览器不支持视频播放。
     </video>
   </div>
@@ -278,7 +278,7 @@
     </div>
   </div>
   
-  <!-- 游戏信息、卡片网格、通关提示等原有内容保持不变 -->
+  <!-- 游戏信息及其他游戏逻辑区域（保持原有） -->
   <div class="game-info" id="gameInfo" style="display:none;">
     关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
     <button class="refresh-btn" onclick="refreshImages()">⟳</button>
@@ -340,21 +340,26 @@
     </div>
   </div>
   
-  <!-- 主画面背景音乐 -->
-  <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%20%E4%B8%BB%E9%A2%98%E6%9B%B2.mp3" loop></audio>
+  <!-- 主题曲：在登入画面点击后开始播放，并持续到进入游戏关卡 -->
+  <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/%E7%A9%BA%E7%99%BD6%E7%A7%92%E4%B8%BB%E9%A2%98%E6%9B%B2.MP3" loop></audio>
+  <!-- 游戏背景音乐：进入游戏关卡后播放 -->
+  <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%E7%89%87%E5%B0%BE.mp3" loop></audio>
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
   
   <script>
-    /* 登入画面处理：点击登入画面后进入加载画面，并调用 video.play() */
+    /* 登入画面处理：点击后隐藏登入画面，显示加载画面，同时启动主题曲 */
     document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
-      const loadingScreen = document.getElementById("loadingScreen");
-      loadingScreen.style.display = "flex";
+      // 开始播放主题曲（主题曲权限由用户交互触发）
+      const themeMusic = document.getElementById("themeMusic");
+      themeMusic.play().catch(e => console.log("主题曲播放失败：", e));
+      // 显示加载画面
+      document.getElementById("loadingScreen").style.display = "flex";
       const loadingVideo = document.querySelector("#loadingScreen video");
-      loadingVideo.play().catch(e => console.log("加载画面播放失败：", e));
+      loadingVideo.play().catch(e => console.log("加载视频播放失败：", e));
     });
   
-    /* 动态更新版本号：以当天日期及当天更新次数生成 */
+    /* 动态更新版本号：以当天日期及更新次数生成 */
     function updateVersion() {
       let now = new Date();
       let dateStr = now.getFullYear().toString() +
@@ -367,7 +372,7 @@
     }
     updateVersion();
   
-    /* 全局变量与配置 */
+    /* 全局配置与变量（游戏关卡逻辑保持原有） */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -672,9 +677,11 @@
       initLevel();
     }
     function startGame() {
-      // 当用户点击“开始游戏”时，关闭主画面背景音乐（如果等待背景音乐正在播放时）
-      const bgMusic = document.getElementById('bgMusic');
-      bgMusic.play().catch(() => {});
+      // 用户点击“开始游戏”时，切换音乐：停止主题曲，播放游戏背景音乐
+      const themeMusic = document.getElementById('themeMusic');
+      themeMusic.pause();
+      const gameMusic = document.getElementById('gameMusic');
+      gameMusic.play().catch(() => {});
       mainMenu.style.display = 'none';
       document.getElementById('gameInfo').style.display = 'block';
       initLevel();
@@ -688,7 +695,7 @@
       return array;
     }
   
-    /* 加载画面处理：监听视频播放完毕后自动进入主画面 */
+    /* 加载画面处理：监听视频播放完毕后自动进入主画面，并启动主画面背景音乐（主题曲持续播放） */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
@@ -696,17 +703,14 @@
       loadingVideo.addEventListener('canplaythrough', () => {
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
-          const bgMusic = document.getElementById('bgMusic');
-          bgMusic.play().catch(() => {});
+          // 主画面显示时继续播放主题曲（已在登入时启动）
           document.getElementById('mainMenu').style.display = 'block';
         };
       });
-      // 备用超时：10秒后若加载画面仍显示，则直接进入主画面
+      // 备用超时：10秒后若加载画面仍在，则直接进入主画面
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
-          const bgMusic = document.getElementById('bgMusic');
-          bgMusic.play().catch(() => {});
           document.getElementById('mainMenu').style.display = 'block';
         }
       }, 10000);
