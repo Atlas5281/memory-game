@@ -49,38 +49,54 @@
     #loadingScreen video {
       width: 90%;
       max-width: 600px;
-      border: 0 !important;
-      outline: none !important;
-      box-shadow: none !important;
+      border: 0;
+      outline: none;
+      box-shadow: none;
       display: block;
-      /* 注意：此处不设置 muted，确保视频内嵌声音正常播放 */
+      /* 不设置 muted，确保视频内嵌声音正常播放 */
     }
-    /* 主画面：背景图满布整个16:9区域，适配手机 */
+    /* 主画面：背景图更新为 funner home.png，保持16:9比例自适应 */
     #mainMenu {
       display: none;
       position: relative;
       width: 100%;
       height: calc(100vw * 9 / 16);
-      background: url("https://storage.googleapis.com/atlas-funner-1/%E4%B8%BB%E7%94%BB%E9%9D%A2.png") no-repeat center center;
+      background: url("https://storage.googleapis.com/atlas-funner-1/funner%20home.png") no-repeat center center;
       background-size: cover;
       z-index: 100;
     }
-    /* 主画面内覆盖层：放置各功能按键及版本号 */
+    /* 主画面顶部覆盖条：显示版本号和设置按钮 */
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      z-index: 120;
+    }
+    .top-bar .version {
+      font-size: 14px;
+      color: gray;
+      background: rgba(255,255,255,0.7);
+      padding: 2px 5px;
+      border-radius: 5px;
+    }
+    .top-bar .settings-btn {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      color: #fff;
+      cursor: pointer;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    /* 主画面内覆盖层：放置各功能按键（位于下方） */
     .menu-content {
       position: absolute;
       bottom: 20px;
       width: 100%;
       text-align: center;
-    }
-    .menu-content h1 {
-      margin-bottom: 10px;
-      color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    .menu-content p {
-      margin-bottom: 15px;
-      color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     .menu-content button {
       background: transparent;
@@ -91,18 +107,7 @@
       margin: 5px;
       text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
-    .version {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 14px;
-      color: gray;
-      background: rgba(255,255,255,0.7);
-      padding: 2px 5px;
-      border-radius: 5px;
-      z-index: 110;
-    }
-    /* 以下为游戏逻辑区域（游戏信息、卡片、排行榜等）——保持原有样式 */
+    /* 游戏逻辑区域样式保持不变 */
     .game-info {
       width: 100%;
       max-width: 500px;
@@ -248,6 +253,20 @@
       cursor: pointer;
     }
     .close:hover, .close:focus { color: black; }
+    /* 设置模态框 */
+    #settingsModal {
+      display: none;
+      position: fixed;
+      z-index: 30;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    #settingsModal .modal-content {
+      margin: 20% auto;
+    }
   </style>
 </head>
 <body>
@@ -259,14 +278,18 @@
   <!-- 加载画面 -->
   <div id="loadingScreen">
     <video autoplay playsinline preload="auto">
-      <source src="https://storage.googleapis.com/atlas-funner-1/%E5%8A%A0%E8%BD%BD%E7%94%BB%E9%9D%A2%E5%B8%A6%E9%9F%B3%E6%95%880311.mp4" type="video/mp4">
+      <source src="https://storage.googleapis.com/atlas-funner-1/VIDEO/%E5%8A%A0%E8%BD%BD%E7%94%BB%E9%9D%A20311.mp4" type="video/mp4">
       您的浏览器不支持视频播放。
     </video>
   </div>
   
   <!-- 主画面 -->
   <div id="mainMenu">
-    <div class="version"></div>
+    <!-- 主画面顶部覆盖条：版本号和设置按钮 -->
+    <div class="top-bar">
+      <div class="version"></div>
+      <button class="settings-btn" onclick="showSettings()">⚙</button>
+    </div>
     <div class="menu-content">
       <h1>FUNNER 翻乐</h1>
       <p>步数规则：每翻两张卡牌算一步</p>
@@ -277,14 +300,12 @@
     </div>
   </div>
   
-  <!-- 游戏信息、卡片网格、通关提示（原有逻辑区域） -->
+  <!-- 游戏逻辑区域（信息、卡片网格、通关提示） -->
   <div class="game-info" id="gameInfo" style="display:none;">
     关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
     <button class="refresh-btn" onclick="refreshImages()">⟳</button>
   </div>
-  
   <div class="card-grid hidden" id="cardGrid"></div>
-  
   <div id="winMessage">
     <h2>恭喜通关！</h2>
     <p>本关步数：<span id="finalSteps">0</span></p>
@@ -294,7 +315,6 @@
     </div>
     <button id="winButton" onclick="nextLevel()">下一关</button>
   </div>
-  
   <div class="bottom-bar">
     <button onclick="showLeaderboard()">排行榜</button>
     <button onclick="goHome()">主画面</button>
@@ -339,24 +359,33 @@
     </div>
   </div>
   
-  <!-- 主题曲：点击登入后开始播放并持续至进入游戏关卡 -->
+  <!-- 设置模态框 -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeSettings()">&times;</span>
+      <h2>设置</h2>
+      <label for="bgVolume">背景音乐音量</label>
+      <input type="range" id="bgVolume" min="0" max="1" step="0.01" value="1" />
+    </div>
+  </div>
+  
+  <!-- 主题曲：点击登入后启动并持续至进入游戏关卡 -->
   <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/%E7%A9%BA%E7%99%BD6%E7%A7%92%E4%B8%BB%E9%A2%98%E6%9B%B2.MP3" loop></audio>
   <!-- 游戏背景音乐：进入游戏关卡后播放 -->
   <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%E7%89%87%E5%B0%BE.mp3" loop></audio>
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
   
   <script>
-    /* 登入画面：点击后隐藏并启动主题曲与加载画面 */
+    /* 登入画面：点击后隐藏并进入加载画面 */
     document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
-      const themeMusic = document.getElementById("themeMusic");
-      themeMusic.play().catch(e => console.log("主题曲播放失败：", e));
+      // 启动载入画面：显示加载画面并播放载入视频
       document.getElementById("loadingScreen").style.display = "flex";
       const loadingVideo = document.querySelector("#loadingScreen video");
       loadingVideo.play().catch(e => console.log("加载视频播放失败：", e));
     });
   
-    /* 动态更新版本号：以当天日期及更新次数生成 */
+    /* 动态更新版本号：基于当天日期及更新次数 */
     function updateVersion() {
       let now = new Date();
       let dateStr = now.getFullYear().toString() +
@@ -369,13 +398,12 @@
     }
     updateVersion();
   
-    /* 主画面按钮图片替换功能配置
-       若 image 字段为空，则使用 fallback 颜色作为背景（此处仅显示文字） */
+    /* 主画面按钮图片替换配置：更新为新图标 */
     var buttonConfig = {
-      btnStart: { image: "", width: "150px", height: "50px", fallback: "#4CAF50", text: "开始游戏" },
-      btnGallery: { image: "", width: "120px", height: "40px", fallback: "#4CAF50", text: "图鉴" },
-      btnLeaderboard: { image: "", width: "120px", height: "40px", fallback: "#4CAF50", text: "排行榜" },
-      btnHome: { image: "", width: "120px", height: "40px", fallback: "#4CAF50", text: "主画面" }
+      btnStart: { image: "https://storage.googleapis.com/atlas-funner-1/UI/play.png", width: "150px", height: "50px", fallback: "#4CAF50", text: "开始游戏" },
+      btnGallery: { image: "https://storage.googleapis.com/atlas-funner-1/UI/play.png", width: "120px", height: "40px", fallback: "#4CAF50", text: "图鉴" },
+      btnLeaderboard: { image: "https://storage.googleapis.com/atlas-funner-1/UI/Field%20guide.png", width: "120px", height: "40px", fallback: "#4CAF50", text: "排行榜" },
+      btnHome: { image: "https://storage.googleapis.com/atlas-funner-1/UI/home.png", width: "120px", height: "40px", fallback: "#4CAF50", text: "主画面" }
     };
     function updateButtonImages() {
       for (var btnId in buttonConfig) {
@@ -396,7 +424,19 @@
       }
     }
   
-    /* 以下为游戏逻辑及关卡代码（保持原有逻辑） */
+    /* 设置模态框处理 */
+    function showSettings() {
+      document.getElementById("settingsModal").style.display = "block";
+    }
+    function closeSettings() {
+      document.getElementById("settingsModal").style.display = "none";
+    }
+    document.getElementById("bgVolume").addEventListener("input", function() {
+      document.getElementById("bgMusic").volume = this.value;
+      document.getElementById("gameMusic").volume = this.value;
+    });
+  
+    /* 游戏逻辑及关卡代码（保持原有） */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -701,7 +741,7 @@
       initLevel();
     }
     function startGame() {
-      // 用户点击“开始游戏”时：停止主题曲，启动游戏背景音乐，进入游戏关卡
+      // 用户点击“开始游戏”时：停止主画面背景音乐，启动游戏背景音乐，并进入游戏关卡
       const themeMusic = document.getElementById('themeMusic');
       themeMusic.pause();
       const gameMusic = document.getElementById('gameMusic');
@@ -719,20 +759,20 @@
       return array;
     }
   
-    /* 加载画面处理：监听视频播放完毕后进入主画面 */
+    /* 载入画面处理：监听视频播放完毕后，自动进入主画面 */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
-  
       loadingVideo.addEventListener('canplaythrough', () => {
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
+          // 显示主画面并启动背景音乐（主画面背景音乐将在此播放）
           document.getElementById('mainMenu').style.display = 'block';
-          // 更新主画面按钮（图片替换配置）
+          const bgMusic = document.getElementById('bgMusic');
+          bgMusic.play().catch(() => {});
           updateButtonImages();
         };
       });
-      // 备用超时：10秒后若加载画面仍显示，则直接进入主画面
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
