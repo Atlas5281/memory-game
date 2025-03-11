@@ -11,39 +11,37 @@
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       position: relative;
-      padding-bottom: 20px;
     }
-    /* 启动交互层 */
-    #startOverlay {
+    /* 登入画面：全屏背景图片（使用指定登入画面资源），提示文字放在下方 */
+    #loginScreen {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background: #fff;
-      z-index: 200;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: url("https://storage.googleapis.com/atlas-funner-1/%E4%B8%BB%E7%94%BB%E9%9D%A216%E6%AF%949.png") no-repeat center center;
+      background-size: cover;
+      z-index: 300;
       cursor: pointer;
     }
-    #startOverlay .start-text {
-      font-size: 24px;
-      color: #333;
+    #loginScreen .login-text {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 28px;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    /* 加载画面：背景白色，仅显示视频，无任何外框 */
+    /* 加载画面 */
     #loadingScreen {
       position: fixed;
       top: 0; left: 0;
       width: 100%;
       height: 100%;
       background: #fff;
-      z-index: 100;
-      display: flex;
+      z-index: 200;
+      display: none;
       align-items: center;
       justify-content: center;
     }
@@ -55,94 +53,61 @@
       box-shadow: none !important;
       display: block;
     }
-    /* 等待画面：全屏背景图片及提示文字 */
-    #waitingScreen {
+    /* 主画面：背景图满布整个16:9画面，适配手机 */
+    #mainMenu {
       display: none;
-      position: fixed;
-      top: 0; left: 0;
+      position: relative;
       width: 100%;
-      height: 100%;
-      background: url("https://storage.googleapis.com/atlas-funner-1/%E4%B8%BB%E7%94%BB%E9%9D%A216%E6%AF%949.png") no-repeat center center;
+      /* 高度按16:9比例，注意在手机上效果最佳 */
+      height: calc(100vw * 9 / 16);
+      background: url("https://storage.googleapis.com/atlas-funner-1/%E4%B8%BB%E7%94%BB%E9%9D%A2.png") no-repeat center center;
       background-size: cover;
-      z-index: 50;
-      cursor: pointer;
+      z-index: 100;
     }
-    #waitingScreen .waiting-text {
+    /* 主画面内覆盖层：放置按键及版本号，按键只显示文字 */
+    .menu-content {
       position: absolute;
-      bottom: 20%;
+      bottom: 20px;
       width: 100%;
       text-align: center;
-      font-size: 24px;
-      color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    /* 顶部栏 */
-    .top-bar {
-      width: 100%;
-      max-width: 500px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      background: #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
-      z-index: 5;
-    }
-    .version { font-size: 14px; color: gray; }
-    .top-icons {
-      display: flex;
-      gap: 10px;
-    }
-    .top-icons button {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-    }
-    /* 主界面 */
-    .main-menu {
-      width: 100%;
-      max-width: 500px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-top: 30px;
-      text-align: center;
-      position: relative;
-      z-index: 2;
-    }
-    .menu-bg {
-      width: 100%;
-      max-width: 300px;
-      height: auto;
-      margin: 0 auto 20px;
-      display: block;
+      background: transparent;
     }
     .menu-content h1 {
       margin-bottom: 10px;
-      color: #333;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     .menu-content p {
       margin-bottom: 15px;
-      color: #555;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     .menu-content button {
-      padding: 10px 20px;
+      background: transparent;
+      border: none;
       font-size: 18px;
       cursor: pointer;
-      background: #4CAF50;
       color: #fff;
-      border: none;
-      border-radius: 5px;
+      margin: 5px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
-    /* 游戏信息 */
+    .version {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 14px;
+      color: gray;
+      background: rgba(255,255,255,0.7);
+      padding: 2px 5px;
+      border-radius: 5px;
+      z-index: 110;
+    }
+    /* 以下保持原有游戏逻辑样式（游戏信息、卡片网格、通关提示等） */
     .game-info {
       width: 100%;
       max-width: 500px;
       text-align: center;
-      margin: 10px 0;
+      margin: 10px auto;
       font-size: 16px;
       background: #fff;
       padding: 10px;
@@ -156,7 +121,6 @@
       cursor: pointer;
       margin-left: 10px;
     }
-    /* 卡片网格 */
     .card-grid {
       display: grid;
       gap: 5px;
@@ -206,12 +170,10 @@
       height: 100%;
       object-fit: cover;
     }
-    /* 卡牌背面使用新资源 */
     .card-back {
       background: url("https://storage.googleapis.com/atlas-funner-1/logo%E5%9B%BE%E7%89%87.jpg") no-repeat center center;
       background-size: cover;
     }
-    /* 通关提示 */
     #winMessage {
       position: absolute;
       top: 50%;
@@ -235,14 +197,13 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* 底部按钮 */
     .bottom-bar {
       width: 100%;
       max-width: 500px;
       display: flex;
       justify-content: center;
       gap: 20px;
-      margin-top: auto;
+      margin: 10px auto;
       padding: 10px;
       background: #fff;
       box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
@@ -250,13 +211,12 @@
     .bottom-bar button {
       padding: 10px 15px;
       font-size: 14px;
-      background: #4CAF50;
-      color: #fff;
+      background: transparent;
+      color: #4CAF50;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
-    /* 模态框样式（排行榜、帮助、图鉴、图片详情） */
     .modal {
       display: none;
       position: fixed;
@@ -291,12 +251,12 @@
   </style>
 </head>
 <body>
-  <!-- 启动交互层：首次点击触发音频播放权限 -->
-  <div id="startOverlay">
-    <div class="start-text">点击任意处开始</div>
+  <!-- 登入画面 -->
+  <div id="loginScreen">
+    <div class="login-text">点击任意处开始</div>
   </div>
   
-  <!-- 加载画面（播放指定 MP4，包括视频自带的声音） -->
+  <!-- 加载画面 -->
   <div id="loadingScreen">
     <video autoplay playsinline preload="auto">
       <source src="https://storage.googleapis.com/atlas-funner-1/%E8%BD%BD%E5%85%A5%E7%94%BB%E9%9D%A2%E5%B8%A6%E9%9F%B3%E6%95%880310.mp4" type="video/mp4">
@@ -304,40 +264,28 @@
     </video>
   </div>
   
-  <!-- 等待画面 -->
-  <div id="waitingScreen">
-    <div class="waiting-text">点击任意处进入主画面</div>
-    <audio id="waitingMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%20%E4%B8%BB%E9%A2%98%E6%9B%B2.mp3" loop></audio>
-  </div>
-
-  <!-- 顶部栏 -->
-  <div class="top-bar">
-    <div class="version">版本号：加载中...</div>
-    <div class="top-icons">
-      <button class="help-btn" onclick="showHelp()">❓</button>
-    </div>
-  </div>
-
-  <!-- 主界面 -->
-  <div class="main-menu" id="mainMenu" style="display:none;">
-    <img src="https://storage.googleapis.com/atlas-funner-1/%E6%B8%B8%E6%88%8F%E4%B8%BB%E7%94%BB%E9%9D%A2logo.png" alt="主画面Logo" class="menu-bg">
+  <!-- 主画面 -->
+  <div id="mainMenu">
+    <div class="version"></div>
     <div class="menu-content">
       <h1>FUNNER 翻乐</h1>
       <p>步数规则：每翻两张卡牌算一步</p>
       <button onclick="startGame()">开始游戏</button>
+      <br><br>
+      <button onclick="showGallery()">图鉴</button>
+      <button onclick="showLeaderboard()">排行榜</button>
+      <button onclick="goHome()">主画面</button>
     </div>
   </div>
-
-  <!-- 游戏信息 -->
+  
+  <!-- 游戏信息、卡片网格、通关提示等原有内容保持不变 -->
   <div class="game-info" id="gameInfo" style="display:none;">
     关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
     <button class="refresh-btn" onclick="refreshImages()">⟳</button>
   </div>
-
-  <!-- 卡片网格 -->
+  
   <div class="card-grid hidden" id="cardGrid"></div>
-
-  <!-- 通关提示 -->
+  
   <div id="winMessage">
     <h2>恭喜通关！</h2>
     <p>本关步数：<span id="finalSteps">0</span></p>
@@ -347,14 +295,13 @@
     </div>
     <button id="winButton" onclick="nextLevel()">下一关</button>
   </div>
-
-  <!-- 底部按钮 -->
+  
   <div class="bottom-bar">
     <button onclick="showLeaderboard()">排行榜</button>
     <button onclick="goHome()">主画面</button>
     <button onclick="showGallery()">图鉴</button>
   </div>
-
+  
   <!-- 图鉴模态框 -->
   <div id="galleryModal" class="modal">
     <div class="modal-content">
@@ -363,7 +310,7 @@
       <div id="galleryContent" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
     </div>
   </div>
-
+  
   <!-- 图片详情模态框 -->
   <div id="imageDetailModal" class="modal">
     <div class="modal-content">
@@ -371,7 +318,7 @@
       <div id="imageDetailContent"></div>
     </div>
   </div>
-
+  
   <!-- 帮助模态框 -->
   <div id="helpModal" class="modal">
     <div class="modal-content">
@@ -383,7 +330,7 @@
       <p>4. 开发者功能：连续点击刷新按钮5次可触发一键通关。</p>
     </div>
   </div>
-
+  
   <!-- 排行榜模态框 -->
   <div id="leaderboardModal" class="modal">
     <div class="modal-content">
@@ -392,31 +339,35 @@
       <ul id="leaderboardFullList"></ul>
     </div>
   </div>
-
-  <!-- 背景音乐（主游戏背景音乐） -->
-  <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%E7%89%87%E5%B0%BE.mp3" loop></audio>
+  
+  <!-- 主画面背景音乐 -->
+  <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/FUNNER%20%E4%B8%BB%E9%A2%98%E6%9B%B2.mp3" loop></audio>
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
-
+  
   <script>
-    /* 启动交互：要求用户点击后再开始加载流程，触发音频播放权限 */
-    document.getElementById("startOverlay").addEventListener("click", function() {
+    /* 登入画面处理：点击登入画面后进入加载画面，并调用 video.play() */
+    document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
+      const loadingScreen = document.getElementById("loadingScreen");
+      loadingScreen.style.display = "flex";
+      const loadingVideo = document.querySelector("#loadingScreen video");
+      loadingVideo.play().catch(e => console.log("加载画面播放失败：", e));
     });
-
-    /* 动态更新版本号 */
+  
+    /* 动态更新版本号：以当天日期及当天更新次数生成 */
     function updateVersion() {
-      const now = new Date();
-      const version = now.getFullYear().toString() +
+      let now = new Date();
+      let dateStr = now.getFullYear().toString() +
         ('0' + (now.getMonth() + 1)).slice(-2) +
-        ('0' + now.getDate()).slice(-2) + '-' +
-        ('0' + now.getHours()).slice(-2) +
-        ('0' + now.getMinutes()).slice(-2) +
-        ('0' + now.getSeconds()).slice(-2);
-      document.querySelector('.version').textContent = "版本号：" + version;
+        ('0' + now.getDate()).slice(-2);
+      let key = 'updateCount_' + dateStr;
+      let count = parseInt(localStorage.getItem(key) || "0") + 1;
+      localStorage.setItem(key, count);
+      document.querySelector('.version').textContent = "版本号：" + dateStr + "-" + count;
     }
     updateVersion();
-
-    /* 全局配置与游戏变量 */
+  
+    /* 全局变量与配置 */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -438,7 +389,7 @@
       'https://www.cmfish.com/kinds/fish_s/niujiao.jpg'
     ];
     const defaultImage = "https://via.placeholder.com/80?text=?";
-
+  
     let currentLevel = 1;
     const maxLevel = 3;
     let stepCount = 0;
@@ -448,8 +399,7 @@
     let refreshClickCount = 0;
     let refreshTimer;
     let dynamicCardSize = 60;
-
-    // 排行榜数据：对象数组 { score, nickname, avatar, userId }
+  
     let leaderboard = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
     let unlockedImages = new Set();
     const imageDescriptions = {
@@ -472,7 +422,7 @@
       'https://www.cmfish.com/kinds/fish_s/qingwa.jpg': '趣味十足的青蛙鱼，外观别致令人会心一笑。',
       'https://www.cmfish.com/kinds/fish_s/niujiao.jpg': '牛角鱼独特的角状鳍，展示野性与力量。'
     };
-
+  
     const levelEl = document.getElementById('level');
     const stepCountEl = document.getElementById('stepCount');
     const cardGrid = document.getElementById('cardGrid');
@@ -480,7 +430,7 @@
     const finalStepsEl = document.getElementById('finalSteps');
     const leaderboardList = document.getElementById('leaderboardList');
     const mainMenu = document.getElementById('mainMenu');
-
+  
     function initLevel() {
       let cols, rows;
       if (currentLevel === 1) { cols = 4; rows = 4; levelEl.textContent = "1"; }
@@ -494,7 +444,7 @@
       winMessage.style.display = 'none';
       cardGrid.innerHTML = '';
       cardGrid.classList.remove('hidden');
-
+  
       if (currentLevel === 1 || currentLevel === 2) {
         cardGrid.style.width = window.innerWidth + 'px';
         cardGrid.style.maxWidth = 'none';
@@ -506,12 +456,12 @@
         cardGrid.style.maxWidth = '500px';
         cardGrid.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
       }
-
+  
       let totalCells = cols * rows;
       let pairs = (currentLevel === 2) ? 12 : totalCells / 2;
       let selected = imagesPool.slice(0, pairs);
       let cardImages = [...selected, ...selected];
-
+  
       if (currentLevel === 2) {
         shuffleArray(cardImages);
         let grid = [];
@@ -524,11 +474,11 @@
       } else {
         cardImages = shuffleArray(cardImages);
       }
-
+  
       cardImages.forEach((imgUrl) => {
         cardGrid.appendChild(createCard(imgUrl));
       });
-
+  
       if (currentLevel === 3) {
         lockBoard = false;
       } else {
@@ -540,7 +490,7 @@
         }, 3000);
       }
     }
-
+  
     function createCard(imgUrl) {
       const card = document.createElement('div');
       card.className = 'card';
@@ -563,7 +513,7 @@
       card.addEventListener('click', () => handleCardClick(card, imgUrl));
       return card;
     }
-
+  
     function handleCardClick(card, imgUrl) {
       if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
       card.classList.add('flipped');
@@ -575,7 +525,7 @@
         setTimeout(checkMatch, 300);
       }
     }
-
+  
     function checkMatch() {
       const [first, second] = flippedCards;
       if (first.imgUrl === second.imgUrl) {
@@ -592,18 +542,17 @@
       flippedCards = [];
       lockBoard = false;
     }
-
+  
     function isLevelComplete() {
       let total = cardGrid.children.length;
       let available = (currentLevel === 2) ? total - 1 : total;
       return matchedPairs === available / 2;
     }
-
+  
     function endLevel() {
       finalStepsEl.textContent = stepCount;
       winMessage.style.display = 'block';
       if (currentLevel === 3) {
-        // 记录排行榜（此处使用默认“匿名”）
         leaderboard.push({ score: stepCount, nickname: "匿名", avatar: "", userId: "stub" });
         leaderboard.sort((a, b) => a.score - b.score);
         localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
@@ -620,7 +569,7 @@
       }
       lockBoard = true;
     }
-
+  
     function renderLeaderboard() {
       leaderboardList.innerHTML = '';
       leaderboard.forEach((record, idx) => {
@@ -629,7 +578,7 @@
         leaderboardList.appendChild(li);
       });
     }
-
+  
     function showLeaderboard() {
       let stored = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
       stored.sort((a, b) => a.score - b.score);
@@ -646,10 +595,10 @@
       }
       document.getElementById('leaderboardModal').style.display = 'block';
     }
-
+  
     function closeLeaderboard() { document.getElementById('leaderboardModal').style.display = 'none'; }
     function goHome() { location.reload(); }
-
+  
     function refreshImages() {
       document.querySelectorAll('.card-front img').forEach(img => { img.src = img.src; });
       refreshClickCount++;
@@ -657,7 +606,7 @@
       refreshTimer = setTimeout(() => { refreshClickCount = 0; }, 3000);
       if (refreshClickCount >= 5) { oneKeyComplete(); refreshClickCount = 0; }
     }
-
+  
     function oneKeyComplete() {
       document.querySelectorAll('.card:not(.blank)').forEach(card => {
         card.classList.add('flipped');
@@ -670,13 +619,13 @@
       document.querySelectorAll('.card-front img').forEach(img => unlockedImages.add(img.src));
       endLevel();
     }
-
+  
     function playMatchSound() {
       const sound = document.getElementById('matchSound');
       sound.currentTime = 0;
       sound.play();
     }
-
+  
     function showGallery() {
       const galleryContent = document.getElementById('galleryContent');
       galleryContent.innerHTML = '';
@@ -696,7 +645,7 @@
       }
       document.getElementById('galleryModal').style.display = 'block';
     }
-
+  
     function closeGallery() { document.getElementById('galleryModal').style.display = 'none'; }
     function showImageDetail(imgUrl) {
       const description = imageDescriptions[imgUrl] || "这是一张精美的图片，展现了海洋生物的独特魅力。";
@@ -707,10 +656,10 @@
       document.getElementById('imageDetailModal').style.display = 'block';
     }
     function closeImageDetail() { document.getElementById('imageDetailModal').style.display = 'none'; }
-
+  
     function showHelp() { document.getElementById('helpModal').style.display = 'block'; }
     function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
-
+  
     function nextLevel() {
       currentLevel++;
       if (currentLevel > maxLevel) currentLevel = maxLevel;
@@ -723,16 +672,14 @@
       initLevel();
     }
     function startGame() {
-      // 用户点击开始游戏时，关闭等待画面背景音乐
-      const waitingMusic = document.getElementById('waitingMusic');
-      waitingMusic.pause();
+      // 当用户点击“开始游戏”时，关闭主画面背景音乐（如果等待背景音乐正在播放时）
+      const bgMusic = document.getElementById('bgMusic');
+      bgMusic.play().catch(() => {});
       mainMenu.style.display = 'none';
       document.getElementById('gameInfo').style.display = 'block';
       initLevel();
-      const bgMusic = document.getElementById('bgMusic');
-      bgMusic.play().catch(() => {});
     }
-
+  
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -740,35 +687,27 @@
       }
       return array;
     }
-
-    /* 等待画面处理 */
-    function proceedToWaitingScreen() {
-      const waitingScreen = document.getElementById('waitingScreen');
-      waitingScreen.style.display = 'block';
-      const waitingMusic = document.getElementById('waitingMusic');
-      waitingMusic.play().catch(() => {});
-      waitingScreen.onclick = function() {
-        waitingMusic.pause();
-        waitingScreen.style.display = 'none';
-        mainMenu.style.display = 'block';
-      }
-    }
-
-    /* 加载画面处理 */
+  
+    /* 加载画面处理：监听视频播放完毕后自动进入主画面 */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
+  
       loadingVideo.addEventListener('canplaythrough', () => {
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
-          proceedToWaitingScreen();
+          const bgMusic = document.getElementById('bgMusic');
+          bgMusic.play().catch(() => {});
+          document.getElementById('mainMenu').style.display = 'block';
         };
       });
-      // 备用超时：10秒后若加载画面仍在，则直接进入等待画面
+      // 备用超时：10秒后若加载画面仍显示，则直接进入主画面
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
-          proceedToWaitingScreen();
+          const bgMusic = document.getElementById('bgMusic');
+          bgMusic.play().catch(() => {});
+          document.getElementById('mainMenu').style.display = 'block';
         }
       }, 10000);
     });
