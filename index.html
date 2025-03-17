@@ -52,21 +52,22 @@
       outline: none;
       box-shadow: none;
       display: block;
-      /* 不设置 muted，确保视频内嵌声音正常播放 */
+      /* 不设置 muted，确保视频内嵌声音能播放 */
     }
-    /* 主画面容器：固定为 16:9 容器 */
+    /* 主画面容器：固定为16:9 */
     #mainMenu {
       display: none;
       width: 100vw;
       height: calc(100vw * 9 / 16);
-      background: #000; /* 背景色可作为备用 */
+      background: #000;
+      position: relative;
+      /* 使用 flex 布局将容器分为顶部、中间、底部三个区域 */
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      position: relative;
     }
-    /* 顶部区域：左上版本号，右上设置按钮 */
+    /* 顶部区域：占 10% 高度 */
     .top-bar {
       width: 100%;
       flex: 0 0 10%;
@@ -82,16 +83,26 @@
       padding: 2px 5px;
       border-radius: 5px;
     }
-    .top-bar .settings-btn {
+    .top-bar button.settings-btn,
+    .top-bar button.devmode-btn {
       background: transparent;
       border: none;
       font-size: 24px;
       color: #000;
       cursor: pointer;
+      margin-left: 10px;
     }
-    /* 中间上半部：主画面图片 */
+    /* 中间区域：占 70% 高度，分为上半部和下半部 */
+    .middle-area {
+      flex: 0 0 70%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
     .main-image-container {
-      flex: 0 0 40%;
+      flex: 1;
       width: 100%;
       display: flex;
       justify-content: center;
@@ -102,9 +113,8 @@
       max-height: 100%;
       object-fit: contain;
     }
-    /* 中间下半部：开始游戏按钮 */
     .middle-button {
-      flex: 0 0 20%;
+      flex: 1;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -113,7 +123,7 @@
       background: transparent;
       border: none;
       cursor: pointer;
-      width: 30%;
+      width: 50%; /* 根据容器比例自适应 */
       max-width: 100%;
     }
     .middle-button button img {
@@ -121,9 +131,9 @@
       height: auto;
       object-fit: contain;
     }
-    /* 底部区域：三个功能按键均匀排布 */
+    /* 底部区域：占 20% 高度 */
     .bottom-buttons {
-      flex: 0 0 30%;
+      flex: 0 0 20%;
       width: 100%;
       display: flex;
       justify-content: space-around;
@@ -142,7 +152,7 @@
       height: auto;
       object-fit: contain;
     }
-    /* 游戏逻辑区域（信息、卡片、排行榜等）保持原有样式 */
+    /* 游戏逻辑区域（原有代码） */
     .game-info {
       width: 100%;
       max-width: 500px;
@@ -237,7 +247,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* 模态框样式（图鉴、排行榜、设置、帮助） */
+    /* 模态框样式 */
     .modal {
       display: none;
       position: fixed;
@@ -283,6 +293,19 @@
     #settingsModal .modal-content {
       margin: 20% auto;
     }
+    /* 开发者模式辅助样式 */
+    .dev-editable { }
+    .dev-editable.dev-mode { outline: 2px dashed red; }
+    .resize-handle {
+      width: 10px;
+      height: 10px;
+      background: red;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      cursor: se-resize;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
@@ -299,25 +322,31 @@
     </video>
   </div>
   
-  <!-- 主画面（16:9 容器） -->
+  <!-- 主画面（16:9容器） -->
   <div id="mainMenu">
     <!-- 顶部区域 -->
-    <div class="top-bar">
+    <div class="top-bar dev-editable">
       <div class="version"></div>
-      <button class="settings-btn" onclick="showSettings()">⚙</button>
+      <div>
+        <button class="settings-btn" onclick="showSettings()">⚙</button>
+        <button class="devmode-btn" onclick="toggleDevMode()">开发者模式</button>
+      </div>
     </div>
-    <!-- 中间上半部：主画面图片 -->
-    <div class="main-image-container">
-      <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/funner%20home.png" alt="主画面图片">
+    <!-- 中间区域 -->
+    <div class="middle-area">
+      <!-- 上半部：主画面图片 -->
+      <div class="main-image-container dev-editable">
+        <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/funner%20home.png" alt="主画面图片">
+      </div>
+      <!-- 下半部：开始游戏按钮 -->
+      <div class="middle-button dev-editable">
+        <button id="btnStart" onclick="startGame()">
+          <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="开始游戏">
+        </button>
+      </div>
     </div>
-    <!-- 中间下半部：开始游戏按钮 -->
-    <div class="middle-button">
-      <button id="btnStart" onclick="startGame()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="开始游戏">
-      </button>
-    </div>
-    <!-- 底部区域：三个功能按键 -->
-    <div class="bottom-buttons">
+    <!-- 底部区域 -->
+    <div class="bottom-buttons dev-editable">
       <button id="btnLeaderboard" onclick="showLeaderboard()">
         <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking%20list.png" alt="排行榜">
       </button>
@@ -330,7 +359,7 @@
     </div>
   </div>
   
-  <!-- 游戏逻辑区域（信息、卡片网格、通关提示） -->
+  <!-- 游戏逻辑区域 -->
   <div class="game-info" id="gameInfo" style="display:none;">
     关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
     <button class="refresh-btn" onclick="refreshImages()">⟳</button>
@@ -346,7 +375,7 @@
     <button id="winButton" onclick="nextLevel()">下一关</button>
   </div>
   
-  <!-- 模态框：图鉴、排行榜、设置、帮助 -->
+  <!-- 模态框 -->
   <div id="galleryModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeGallery()">&times;</span>
@@ -383,20 +412,146 @@
       <h2>设置</h2>
       <label for="bgVolume">背景音乐音量</label>
       <input type="range" id="bgVolume" min="0" max="1" step="0.01" value="1" />
+      <br/><br/>
+      <!-- 开发者模式调试控件 -->
+      <div>
+        <label for="devOffsetX">X偏移 (px): </label>
+        <input type="range" id="devOffsetX" min="-50" max="50" value="0" />
+      </div>
+      <div>
+        <label for="devOffsetY">Y偏移 (px): </label>
+        <input type="range" id="devOffsetY" min="-50" max="50" value="0" />
+      </div>
+      <div>
+        <label for="devScale">UI缩放: </label>
+        <input type="range" id="devScale" min="0.5" max="2" step="0.1" value="1" />
+      </div>
+      <p>调整后自动保存到 localStorage，下次加载时生效</p>
     </div>
   </div>
   
   <!-- 音乐资源 -->
-  <!-- 主题曲：点击登入后播放，直至进入游戏关卡时停止 -->
   <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/%E7%A9%BA%E7%99%BD6%E7%A7%92%E4%B8%BB%E9%A2%98%E6%9B%B2.MP3" loop></audio>
-  <!-- 主画面背景音乐 -->
   <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER%20%E4%B8%BB%E9%A2%98%E6%9B%B2.mp3" loop></audio>
-  <!-- 游戏背景音乐 -->
   <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER%E7%89%87%E5%B0%BE.mp3" loop></audio>
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
   
   <script>
-    /* 登入画面：点击后隐藏并进入载入画面 */
+    /* ---------------- 开发者模式功能 ---------------- */
+    let devModeEnabled = false;
+    // 从 localStorage 读取开发者配置
+    let devOffsetX = parseFloat(localStorage.getItem('devOffsetX')) || 0;
+    let devOffsetY = parseFloat(localStorage.getItem('devOffsetY')) || 0;
+    let devScale = parseFloat(localStorage.getItem('devScale')) || 1;
+    function applyDevSettings() {
+      const elements = document.querySelectorAll('.dev-editable');
+      elements.forEach(el => {
+        el.style.transform = `translate(${devOffsetX}px, ${devOffsetY}px) scale(${devScale})`;
+      });
+    }
+    function updateDevControls() {
+      document.getElementById('devOffsetX').value = devOffsetX;
+      document.getElementById('devOffsetY').value = devOffsetY;
+      document.getElementById('devScale').value = devScale;
+    }
+    document.getElementById('devOffsetX').addEventListener('input', function() {
+      devOffsetX = parseFloat(this.value);
+      localStorage.setItem('devOffsetX', devOffsetX);
+      applyDevSettings();
+    });
+    document.getElementById('devOffsetY').addEventListener('input', function() {
+      devOffsetY = parseFloat(this.value);
+      localStorage.setItem('devOffsetY', devOffsetY);
+      applyDevSettings();
+    });
+    document.getElementById('devScale').addEventListener('input', function() {
+      devScale = parseFloat(this.value);
+      localStorage.setItem('devScale', devScale);
+      applyDevSettings();
+    });
+    function enableDevMode() {
+      devModeEnabled = true;
+      const editableElements = document.querySelectorAll('.dev-editable');
+      editableElements.forEach(el => {
+        if(getComputedStyle(el).position === 'static'){
+          el.style.position = 'absolute';
+          let rect = el.getBoundingClientRect();
+          el.style.left = rect.left + "px";
+          el.style.top = rect.top + "px";
+        }
+        el.classList.add('dev-mode');
+        el.addEventListener('mousedown', devDragStart);
+        if(!el.querySelector('.resize-handle')){
+          const handle = document.createElement('div');
+          handle.classList.add('resize-handle');
+          el.appendChild(handle);
+          handle.addEventListener('mousedown', devResizeStart);
+        }
+      });
+    }
+    function disableDevMode() {
+      devModeEnabled = false;
+      const editableElements = document.querySelectorAll('.dev-editable');
+      editableElements.forEach(el => {
+        el.classList.remove('dev-mode');
+        el.removeEventListener('mousedown', devDragStart);
+        const handle = el.querySelector('.resize-handle');
+        if(handle){
+          handle.removeEventListener('mousedown', devResizeStart);
+          el.removeChild(handle);
+        }
+      });
+    }
+    function toggleDevMode() {
+      if(devModeEnabled) { disableDevMode(); }
+      else { enableDevMode(); }
+    }
+    let dragElem = null, dragOffsetX = 0, dragOffsetY = 0;
+    function devDragStart(e) {
+      if(e.target.classList.contains('resize-handle')) return;
+      dragElem = this;
+      dragOffsetX = e.clientX - dragElem.getBoundingClientRect().left;
+      dragOffsetY = e.clientY - dragElem.getBoundingClientRect().top;
+      document.addEventListener('mousemove', devDragging);
+      document.addEventListener('mouseup', devDragEnd);
+    }
+    function devDragging(e) {
+      if(!dragElem) return;
+      dragElem.style.left = (e.clientX - dragOffsetX) + "px";
+      dragElem.style.top = (e.clientY - dragOffsetY) + "px";
+    }
+    function devDragEnd(e) {
+      document.removeEventListener('mousemove', devDragging);
+      document.removeEventListener('mouseup', devDragEnd);
+      dragElem = null;
+    }
+    let resizeElem = null, initialWidth = 0, initialHeight = 0, startX = 0, startY = 0;
+    function devResizeStart(e) {
+      e.stopPropagation();
+      resizeElem = this.parentElement;
+      const rect = resizeElem.getBoundingClientRect();
+      initialWidth = rect.width;
+      initialHeight = rect.height;
+      startX = e.clientX;
+      startY = e.clientY;
+      document.addEventListener('mousemove', devResizing);
+      document.addEventListener('mouseup', devResizeEnd);
+    }
+    function devResizing(e) {
+      if(!resizeElem) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      resizeElem.style.width = (initialWidth + dx) + "px";
+      resizeElem.style.height = (initialHeight + dy) + "px";
+    }
+    function devResizeEnd(e) {
+      document.removeEventListener('mousemove', devResizing);
+      document.removeEventListener('mouseup', devResizeEnd);
+      resizeElem = null;
+    }
+    /* ---------------- 开发者模式结束 ---------------- */
+  
+    /* 登入画面处理 */
     document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
       document.getElementById("loadingScreen").style.display = "flex";
@@ -404,7 +559,7 @@
       loadingVideo.play().catch(e => console.log("加载视频播放失败：", e));
     });
   
-    /* 动态更新版本号：基于当天日期及更新次数 */
+    /* 动态更新版本号 */
     function updateVersion() {
       let now = new Date();
       let dateStr = now.getFullYear().toString() +
@@ -420,6 +575,7 @@
     /* 设置模态框 */
     function showSettings() {
       document.getElementById("settingsModal").style.display = "block";
+      updateDevControls();
     }
     function closeSettings() {
       document.getElementById("settingsModal").style.display = "none";
@@ -429,7 +585,7 @@
       document.getElementById("gameMusic").volume = this.value;
     });
   
-    /* 游戏关卡及逻辑（保持原有代码） */
+    /* 游戏逻辑及关卡代码（保持原有逻辑） */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -734,12 +890,11 @@
       initLevel();
     }
     function startGame() {
-      // 点击“开始游戏”：停止主画面背景音乐，启动游戏背景音乐，并进入游戏关卡
+      // 点击开始游戏：停止主画面背景音乐，启动游戏背景音乐，进入游戏关卡
       const bgMusic = document.getElementById('bgMusic');
       bgMusic.pause();
       const gameMusic = document.getElementById('gameMusic');
       gameMusic.play().catch(() => {});
-      // 隐藏主画面容器，显示游戏逻辑区域
       document.getElementById('mainMenu').style.display = 'none';
       document.getElementById('gameInfo').style.display = 'block';
       initLevel();
@@ -760,20 +915,19 @@
       loadingVideo.addEventListener('canplaythrough', () => {
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
-          // 显示主画面容器
           document.getElementById('mainMenu').style.display = 'flex';
-          // 启动主画面背景音乐
           const bgMusic = document.getElementById('bgMusic');
           bgMusic.play().catch(() => {});
+          applyDevSettings();
         };
       });
-      // 备用超时：10秒后若载入画面仍显示，则直接进入主画面
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
           document.getElementById('mainMenu').style.display = 'flex';
           const bgMusic = document.getElementById('bgMusic');
           bgMusic.play().catch(() => {});
+          applyDevSettings();
         }
       }, 10000);
     });
