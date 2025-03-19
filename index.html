@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>FUNNER 翻乐</title>
+  <title>FUNNER Flip Game</title>
   <style>
-    /* 通用样式 */
+    /* General Styles */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
@@ -13,13 +13,14 @@
       background-color: #f0f0f0;
       position: relative;
     }
-    /* 登入画面 */
+    /* Login Screen */
     #loginScreen {
       position: fixed;
       top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background: url("https://storage.googleapis.com/atlas-funner-1/%E4%B8%BB%E7%94%BB%E9%9D%A216%E6%AF%949.png") no-repeat center center;
+      /* 使用主菜单背景图片作为登录画面背景，可根据需要调整 */
+      background: url("https://storage.googleapis.com/atlas-funner-1/image/main16-9.png") no-repeat center center;
       background-size: cover;
       z-index: 300;
       cursor: pointer;
@@ -33,7 +34,7 @@
       color: #fff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    /* 载入画面 */
+    /* Loading Screen */
     #loadingScreen {
       position: fixed;
       top: 0; left: 0;
@@ -52,22 +53,20 @@
       outline: none;
       box-shadow: none;
       display: block;
-      /* 不设置 muted，确保视频内嵌声音能播放 */
     }
-    /* 主画面容器：固定为16:9 */
+    /* Main Menu (16:9 container) */
     #mainMenu {
       display: none;
       width: 100vw;
       height: calc(100vw * 9 / 16);
       background: #000;
       position: relative;
-      /* 使用 flex 布局将容器分为顶部、中间、底部三个区域 */
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
     }
-    /* 顶部区域：占 10% 高度 */
+    /* Top Bar (10% height) */
     .top-bar {
       width: 100%;
       flex: 0 0 10%;
@@ -92,9 +91,9 @@
       cursor: pointer;
       margin-left: 10px;
     }
-    /* 中间区域：占 70% 高度，分为上半部和下半部 */
+    /* Middle Area (70% height) */
     .middle-area {
-      flex: 0 0 50%;
+      flex: 0 0 70%;
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -103,7 +102,7 @@
     }
     .main-image-container {
       flex: 1;
-      width: 80%;
+      width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -123,7 +122,7 @@
       background: transparent;
       border: none;
       cursor: pointer;
-      width: 50%; /* 根据容器比例自适应 */
+      width: 50%;
       max-width: 100%;
     }
     .middle-button button img {
@@ -131,9 +130,9 @@
       height: auto;
       object-fit: contain;
     }
-    /* 底部区域：占 20% 高度 */
+    /* Bottom Buttons (20% height) */
     .bottom-buttons {
-      flex: 0 0 40%;
+      flex: 0 0 20%;
       width: 100%;
       display: flex;
       justify-content: space-around;
@@ -152,7 +151,7 @@
       height: auto;
       object-fit: contain;
     }
-    /* 游戏逻辑区域（原有代码） */
+    /* Game Info and Card Grid (Gameplay Area) */
     .game-info {
       width: 100%;
       max-width: 500px;
@@ -220,8 +219,9 @@
       height: 100%;
       object-fit: cover;
     }
+    /* 卡牌背面使用新的图片资源 */
     .card-back {
-      background: url("https://storage.googleapis.com/atlas-funner-1/logo%E5%9B%BE%E7%89%87.jpg") no-repeat center center;
+      background: url("https://storage.googleapis.com/atlas-funner-1/image/logo_image_cardback.jpg") no-repeat center center;
       background-size: cover;
     }
     #winMessage {
@@ -247,7 +247,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* 模态框样式 */
+    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -279,7 +279,7 @@
       cursor: pointer;
     }
     .close:hover, .close:focus { color: black; }
-    /* 设置模态框 */
+    /* Settings Modal */
     #settingsModal {
       display: none;
       position: fixed;
@@ -293,7 +293,7 @@
     #settingsModal .modal-content {
       margin: 20% auto;
     }
-    /* 开发者模式辅助样式 */
+    /* Developer Mode Helper Styles */
     .dev-editable { }
     .dev-editable.dev-mode { outline: 2px dashed red; }
     .resize-handle {
@@ -309,77 +309,77 @@
   </style>
 </head>
 <body>
-  <!-- 登入画面 -->
+  <!-- Login Screen -->
   <div id="loginScreen">
-    <div class="login-text">点击任意处开始</div>
+    <div class="login-text">Click anywhere to start</div>
   </div>
   
-  <!-- 载入画面 -->
+  <!-- Loading Screen -->
   <div id="loadingScreen">
     <video autoplay playsinline preload="auto">
-      <source src="https://storage.googleapis.com/atlas-funner-1/VIDEO/%E5%8A%A0%E8%BD%BD%E7%94%BB%E9%9D%A20311.mp4" type="video/mp4">
-      您的浏览器不支持视频播放。
+      <source src="https://storage.googleapis.com/atlas-funner-1/VIDEO/loading_screen_with_audio0311.mp4" type="video/mp4">
+      Your browser does not support video playback.
     </video>
   </div>
   
-  <!-- 主画面（16:9容器） -->
+  <!-- Main Menu (16:9 container) -->
   <div id="mainMenu">
-    <!-- 顶部区域 -->
+    <!-- Top Bar -->
     <div class="top-bar dev-editable">
       <div class="version"></div>
       <div>
         <button class="settings-btn" onclick="showSettings()">⚙</button>
-        <button class="devmode-btn" onclick="toggleDevMode()">开发者模式</button>
+        <button class="devmode-btn" onclick="toggleDevMode()">Developer Mode</button>
       </div>
     </div>
-    <!-- 中间区域 -->
+    <!-- Middle Area -->
     <div class="middle-area">
-      <!-- 上半部：主画面图片 -->
+      <!-- Main Image Container -->
       <div class="main-image-container dev-editable">
-        <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/funner%20home.png" alt="主画面图片">
+        <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/image/main16-9.png" alt="Main Menu Background">
       </div>
-      <!-- 下半部：开始游戏按钮 -->
+      <!-- Start Game Button -->
       <div class="middle-button dev-editable">
         <button id="btnStart" onclick="startGame()">
-          <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="开始游戏">
+          <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="Start Game">
         </button>
       </div>
     </div>
-    <!-- 底部区域 -->
+    <!-- Bottom Buttons -->
     <div class="bottom-buttons dev-editable">
       <button id="btnLeaderboard" onclick="showLeaderboard()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking%20list.png" alt="排行榜">
+        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking_list.png" alt="Ranking">
       </button>
       <button id="btnHome" onclick="goHome()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/home.png" alt="主画面">
+        <img src="https://storage.googleapis.com/atlas-funner-1/UI/home.png" alt="Main Menu">
       </button>
       <button id="btnGallery" onclick="showGallery()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Field%20guide.png" alt="图鉴">
+        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Field_guide.png" alt="Gallery">
       </button>
     </div>
   </div>
   
-  <!-- 游戏逻辑区域 -->
+  <!-- Game Logic Area -->
   <div class="game-info" id="gameInfo" style="display:none;">
-    关卡: <span id="level">1</span> | 步数: <span id="stepCount">0</span>
+    Level: <span id="level">1</span> | Steps: <span id="stepCount">0</span>
     <button class="refresh-btn" onclick="refreshImages()">⟳</button>
   </div>
   <div class="card-grid hidden" id="cardGrid"></div>
   <div id="winMessage">
-    <h2>恭喜通关！</h2>
-    <p>本关步数：<span id="finalSteps">0</span></p>
+    <h2>Congratulations!</h2>
+    <p>Steps this level: <span id="finalSteps">0</span></p>
     <div id="leaderboard" style="display:none;">
-      <h3>排行榜（第三关）</h3>
+      <h3>Ranking (Level 3)</h3>
       <ul id="leaderboardList"></ul>
     </div>
-    <button id="winButton" onclick="nextLevel()">下一关</button>
+    <button id="winButton" onclick="nextLevel()">Next Level</button>
   </div>
   
-  <!-- 模态框 -->
+  <!-- Modals -->
   <div id="galleryModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeGallery()">&times;</span>
-      <h2>图鉴</h2>
+      <h2>Gallery</h2>
       <div id="galleryContent" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
     </div>
   </div>
@@ -392,54 +392,53 @@
   <div id="helpModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeHelp()">&times;</span>
-      <h2>游戏规则说明</h2>
-      <p>1. 游戏玩法：翻开两张卡牌进行配对，若配对成功则卡牌保持正面，若配对失败则翻回背面。</p>
-      <p>2. 步数计算：每翻两张卡牌计为一步，步数越少代表表现越好。</p>
-      <p>3. 第三关：从第三关开始，不再提供3秒预览，卡牌将直接以覆盖状态开始，增加游戏挑战性。</p>
-      <p>4. 开发者功能：连续点击刷新按钮5次可触发一键通关。</p>
+      <h2>Game Rules</h2>
+      <p>1. Gameplay: Flip two cards to find a matching pair. If they match, they remain face up; otherwise, they flip back.</p>
+      <p>2. Steps: Every two card flips count as one step. Fewer steps indicate better performance.</p>
+      <p>3. Level 3: In Level 3, there is no preview; cards start covered to increase challenge.</p>
+      <p>4. Developer Function: Click the refresh button 5 times continuously to trigger auto-complete.</p>
     </div>
   </div>
   <div id="leaderboardModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeLeaderboard()">&times;</span>
-      <h2>排行榜</h2>
+      <h2>Ranking</h2>
       <ul id="leaderboardFullList"></ul>
     </div>
   </div>
   <div id="settingsModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeSettings()">&times;</span>
-      <h2>设置</h2>
-      <label for="bgVolume">背景音乐音量</label>
+      <h2>Settings</h2>
+      <label for="bgVolume">Background Music Volume</label>
       <input type="range" id="bgVolume" min="0" max="1" step="0.01" value="1" />
       <br/><br/>
-      <!-- 开发者模式调试控件 -->
+      <!-- Developer Mode Controls -->
       <div>
-        <label for="devOffsetX">X偏移 (px): </label>
+        <label for="devOffsetX">X Offset (px): </label>
         <input type="range" id="devOffsetX" min="-50" max="50" value="0" />
       </div>
       <div>
-        <label for="devOffsetY">Y偏移 (px): </label>
+        <label for="devOffsetY">Y Offset (px): </label>
         <input type="range" id="devOffsetY" min="-50" max="50" value="0" />
       </div>
       <div>
-        <label for="devScale">UI缩放: </label>
+        <label for="devScale">UI Scale: </label>
         <input type="range" id="devScale" min="0.5" max="2" step="0.1" value="1" />
       </div>
-      <p>调整后自动保存到 localStorage，下次加载时生效</p>
+      <p>Changes are saved to localStorage and will apply on next load.</p>
     </div>
   </div>
   
-  <!-- 音乐资源 -->
-  <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/%E7%A9%BA%E7%99%BD6%E7%A7%92%E4%B8%BB%E9%A2%98%E6%9B%B2.MP3" loop></audio>
-  <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER%20%E4%B8%BB%E9%A2%98%E6%9B%B2.mp3" loop></audio>
-  <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER%E7%89%87%E5%B0%BE.mp3" loop></audio>
+  <!-- Audio Resources -->
+  <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
+  <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
+  <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
   
   <script>
-    /* ---------------- 开发者模式功能 ---------------- */
+    /* ---------------- Developer Mode Functionality ---------------- */
     let devModeEnabled = false;
-    // 从 localStorage 读取开发者配置
     let devOffsetX = parseFloat(localStorage.getItem('devOffsetX')) || 0;
     let devOffsetY = parseFloat(localStorage.getItem('devOffsetY')) || 0;
     let devScale = parseFloat(localStorage.getItem('devScale')) || 1;
@@ -549,17 +548,17 @@
       document.removeEventListener('mouseup', devResizeEnd);
       resizeElem = null;
     }
-    /* ---------------- 开发者模式结束 ---------------- */
+    /* ---------------- Developer Mode End ---------------- */
   
-    /* 登入画面处理 */
+    /* Login Screen Handling */
     document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
       document.getElementById("loadingScreen").style.display = "flex";
       const loadingVideo = document.querySelector("#loadingScreen video");
-      loadingVideo.play().catch(e => console.log("加载视频播放失败：", e));
+      loadingVideo.play().catch(e => console.log("Loading video playback failed:", e));
     });
   
-    /* 动态更新版本号 */
+    /* Update Version Number */
     function updateVersion() {
       let now = new Date();
       let dateStr = now.getFullYear().toString() +
@@ -568,11 +567,11 @@
       let key = 'updateCount_' + dateStr;
       let count = parseInt(localStorage.getItem(key) || "0") + 1;
       localStorage.setItem(key, count);
-      document.querySelector('.version').textContent = "版本号：" + dateStr + "-" + count;
+      document.querySelector('.version').textContent = "Version: " + dateStr + "-" + count;
     }
     updateVersion();
   
-    /* 设置模态框 */
+    /* Settings Modal Handling */
     function showSettings() {
       document.getElementById("settingsModal").style.display = "block";
       updateDevControls();
@@ -585,7 +584,7 @@
       document.getElementById("gameMusic").volume = this.value;
     });
   
-    /* 游戏逻辑及关卡代码（保持原有逻辑） */
+    /* Game Level and Logic */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -621,24 +620,24 @@
     let leaderboard = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
     let unlockedImages = new Set();
     const imageDescriptions = {
-      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg': '这是一只活泼的小丑鱼，充满海洋活力。',
-      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg': '另一只小丑鱼，展现了独特的海底风情。',
-      'https://www.cmfish.com/kinds/fish_s/diao.jpg': '神秘的鱼类，其流畅线条透露着奇特韵味。',
-      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg': '精致的海洋生物，仿佛艺术品般令人赞叹。',
-      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg': '细腻的色彩搭配，展现了海底的独特魅力。',
-      'https://www.cmfish.com/kinds/fish_s/lion.jpg': '威猛的海洋狮鱼，象征着力量与霸气。',
-      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg': '独特花纹的鱼类，仿佛在诉说海底秘密。',
-      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg': '神秘的紫色调，散发着迷人的魅力。',
-      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg': '优雅的海洋精灵，如月光般温柔。',
-      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg': '精致的海马，形态奇特令人喜爱。',
-      'https://www.cmfish.com/kinds/fish_s/hailong.jpg': '气势磅礴的海龙，掌控着海域的力量。',
-      'https://www.cmfish.com/kinds/fish_s/shark.jpg': '凶猛的鲨鱼，代表海洋的野性。',
-      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg': '虎纹斑斓的小虎鱼，充满灵动魅力。',
-      'https://www.cmfish.com/kinds/fish_s/leida.jpg': '雷达鱼捕捉海底动静，其科技感与神秘并存。',
-      'https://www.cmfish.com/kinds/fish_s/huli.jpg': '狐狸鱼眼神狡黠，散发着智慧气息。',
-      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg': '天珠鱼神秘闪烁，仿佛蕴含天外之力。',
-      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg': '趣味十足的青蛙鱼，外观别致令人会心一笑。',
-      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg': '牛角鱼独特的角状鳍，展示野性与力量。'
+      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg': 'A clownfish full of ocean vitality.',
+      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg': 'Another clownfish with unique underwater charm.',
+      'https://www.cmfish.com/kinds/fish_s/diao.jpg': 'A mysterious fish with smooth lines and peculiar grace.',
+      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg': 'An exquisite marine creature, almost like a piece of art.',
+      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg': 'Delicate color matching that highlights unique underwater charm.',
+      'https://www.cmfish.com/kinds/fish_s/lion.jpg': 'A mighty lionfish symbolizing strength and power.',
+      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg': 'A fish with unique patterns that seems to tell underwater secrets.',
+      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg': 'A mysterious purple-toned fish with enchanting charm.',
+      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg': 'An elegant marine spirit, as gentle as moonlight.',
+      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg': 'A delicate seahorse with an unusual shape.',
+      'https://www.cmfish.com/kinds/fish_s/hailong.jpg': 'A majestic sea dragon controlling its domain.',
+      'https://www.cmfish.com/kinds/fish_s/shark.jpg': 'A fierce shark representing the wildness of the ocean.',
+      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg': 'A small tiger fish with striking patterns.',
+      'https://www.cmfish.com/kinds/fish_s/leida.jpg': 'A fish with a radar-like pattern, exuding mystery and tech vibe.',
+      'https://www.cmfish.com/kinds/fish_s/huli.jpg': 'A sly fish with a cunning look, full of wisdom.',
+      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg': 'A shimmering fish that seems to harbor otherworldly power.',
+      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg': 'A quirky fish that brings a smile with its unique appearance.',
+      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg': 'A fish with horn-like fins, showcasing wild strength.'
     };
   
     const levelEl = document.getElementById('level');
@@ -771,18 +770,18 @@
       finalStepsEl.textContent = stepCount;
       winMessage.style.display = 'block';
       if (currentLevel === 3) {
-        leaderboard.push({ score: stepCount, nickname: "匿名", avatar: "", userId: "stub" });
+        leaderboard.push({ score: stepCount, nickname: "Anonymous", avatar: "", userId: "stub" });
         leaderboard.sort((a, b) => a.score - b.score);
         localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
         document.getElementById('leaderboard').style.display = 'block';
         renderLeaderboard();
         const winButton = document.getElementById('winButton');
-        winButton.textContent = '再玩一次';
+        winButton.textContent = 'Play Again';
         winButton.onclick = resetGame;
       } else {
         document.getElementById('leaderboard').style.display = 'none';
         const winButton = document.getElementById('winButton');
-        winButton.textContent = '下一关';
+        winButton.textContent = 'Next Level';
         winButton.onclick = nextLevel;
       }
       lockBoard = true;
@@ -792,7 +791,7 @@
       leaderboardList.innerHTML = '';
       leaderboard.forEach((record, idx) => {
         const li = document.createElement('li');
-        li.textContent = `第${idx + 1}名：${record.nickname} - ${record.score}步`;
+        li.textContent = `Rank ${idx + 1}: ${record.nickname} - ${record.score} steps`;
         leaderboardList.appendChild(li);
       });
     }
@@ -803,11 +802,11 @@
       const leaderboardFullList = document.getElementById('leaderboardFullList');
       leaderboardFullList.innerHTML = '';
       if (stored.length === 0) {
-        leaderboardFullList.innerHTML = '<li>暂无记录</li>';
+        leaderboardFullList.innerHTML = '<li>No records</li>';
       } else {
         stored.forEach((record, idx) => {
           let li = document.createElement('li');
-          li.textContent = `第${idx + 1}名：${record.nickname} - ${record.score}步`;
+          li.textContent = `Rank ${idx + 1}: ${record.nickname} - ${record.score} steps`;
           leaderboardFullList.appendChild(li);
         });
       }
@@ -848,7 +847,7 @@
       const galleryContent = document.getElementById('galleryContent');
       galleryContent.innerHTML = '';
       if (unlockedImages.size === 0) {
-        galleryContent.innerHTML = '<p>暂无解锁图片</p>';
+        galleryContent.innerHTML = '<p>No images unlocked</p>';
       } else {
         unlockedImages.forEach(imgUrl => {
           const imgElem = document.createElement('img');
@@ -866,7 +865,7 @@
   
     function closeGallery() { document.getElementById('galleryModal').style.display = 'none'; }
     function showImageDetail(imgUrl) {
-      const description = imageDescriptions[imgUrl] || "这是一张精美的图片，展现了海洋生物的独特魅力。";
+      const description = imageDescriptions[imgUrl] || "A beautiful image showcasing unique marine life.";
       document.getElementById('imageDetailContent').innerHTML = `
         <img src="${imgUrl}" style="width:100%; max-width:400px; display:block; margin:0 auto;">
         <p style="text-align:center; margin-top:10px;">${description}</p>
@@ -890,7 +889,7 @@
       initLevel();
     }
     function startGame() {
-      // 点击开始游戏：停止主画面背景音乐，启动游戏背景音乐，进入游戏关卡
+      // 点击“Start Game”：停止主 menu 背景音乐，启动游戏背景音乐，并进入游戏关卡
       const bgMusic = document.getElementById('bgMusic');
       bgMusic.pause();
       const gameMusic = document.getElementById('gameMusic');
@@ -908,7 +907,7 @@
       return array;
     }
   
-    /* 载入画面处理：监听视频播放完毕后自动进入主画面，并启动主画面背景音乐 */
+    /* Loading Screen Handling */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
