@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>FUNNER Flip Game</title>
   <style>
-    /* -------------------- 通用样式 -------------------- */
+    /* General Styles */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
@@ -13,11 +13,13 @@
       background-color: #f0f0f0;
       position: relative;
     }
-    /* -------------------- 登录画面 -------------------- */
+    /* Login Screen */
     #loginScreen {
       position: fixed;
       top: 0; left: 0;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
+      /* 使用主菜单背景图片作为登录画面背景，可根据需要调整 */
       background: url("https://storage.googleapis.com/atlas-funner-1/image/main16-9.png") no-repeat center center;
       background-size: cover;
       z-index: 300;
@@ -32,11 +34,12 @@
       color: #fff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    /* -------------------- 载入画面 -------------------- */
+    /* Loading Screen */
     #loadingScreen {
       position: fixed;
       top: 0; left: 0;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       background: #fff;
       z-index: 200;
       display: none;
@@ -46,9 +49,12 @@
     #loadingScreen video {
       width: 90%;
       max-width: 600px;
-      border: 0; outline: none; display: block;
+      border: 0;
+      outline: none;
+      box-shadow: none;
+      display: block;
     }
-    /* -------------------- 主菜单（16:9容器） -------------------- */
+    /* Main Menu (16:9 container) */
     #mainMenu {
       display: none;
       width: 100vw;
@@ -60,7 +66,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    /* 顶部区域 */
+    /* Top Bar (10% height) */
     .top-bar {
       width: 100%;
       flex: 0 0 10%;
@@ -85,7 +91,7 @@
       cursor: pointer;
       margin-left: 10px;
     }
-    /* 中间区域 */
+    /* Middle Area (70% height) */
     .middle-area {
       flex: 0 0 70%;
       width: 100%;
@@ -100,6 +106,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
+
+  
     }
     .main-image-container img {
       max-width: 100%;
@@ -107,10 +115,15 @@
       object-fit: contain;
     }
     .middle-button {
-      flex: 1;
+      /*flex: 1;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: center;*/
+      position: absolute; /* 绝对定位，相对于.main-image-container */
+      bottom: 25%; /* 将按钮固定在容器的底部 */
+      left: 33%; /* 水平居中 */
+      transform: translateX(-50%); /* 调整按钮位置使其完全居中 */
+      margin-bottom: 20px; /* 根据需要调整底部外边距 */
     }
     .middle-button button {
       background: transparent;
@@ -124,7 +137,7 @@
       height: auto;
       object-fit: contain;
     }
-    /* 底部区域 */
+    /* Bottom Buttons (20% height) */
     .bottom-buttons {
       flex: 0 0 20%;
       width: 100%;
@@ -132,6 +145,11 @@
       justify-content: space-around;
       align-items: center;
       padding: 0 5%;
+      position: absolute; /* 绝对定位，相对于.main-image-container */
+      bottom: 20%; /* 将按钮固定在容器的底部 */
+      left: 0%; /* 水平居中 */
+      transform: translateX(-50%); /* 调整按钮位置使其完全居中 */
+      margin-bottom: 20px; /* 根据需要调整底部外边距 */
     }
     .bottom-buttons button {
       background: transparent;
@@ -145,7 +163,7 @@
       height: auto;
       object-fit: contain;
     }
-    /* -------------------- 游戏关卡区域 -------------------- */
+    /* Game Info and Card Grid (Gameplay Area) */
     .game-info {
       width: 100%;
       max-width: 500px;
@@ -213,7 +231,7 @@
       height: 100%;
       object-fit: cover;
     }
-    /* 卡牌背面使用新图片 */
+    /* 卡牌背面使用新的图片资源 */
     .card-back {
       background: url("https://storage.googleapis.com/atlas-funner-1/image/logo_image_cardback.jpg") no-repeat center center;
       background-size: cover;
@@ -241,7 +259,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* -------------------- 模态框样式 -------------------- */
+    /* Modal Styles */
     .modal {
       display: none;
       position: fixed;
@@ -273,7 +291,7 @@
       cursor: pointer;
     }
     .close:hover, .close:focus { color: black; }
-    /* -------------------- 设置模态框 -------------------- */
+    /* Settings Modal */
     #settingsModal {
       display: none;
       position: fixed;
@@ -287,7 +305,7 @@
     #settingsModal .modal-content {
       margin: 20% auto;
     }
-    /* -------------------- 开发者模式辅助样式 -------------------- */
+    /* Developer Mode Helper Styles */
     .dev-editable { }
     .dev-editable.dev-mode { outline: 2px dashed red; }
     .resize-handle {
@@ -303,12 +321,12 @@
   </style>
 </head>
 <body>
-  <!-- 登录画面 -->
+  <!-- Login Screen -->
   <div id="loginScreen">
     <div class="login-text">Click anywhere to start</div>
   </div>
   
-  <!-- 载入画面 -->
+  <!-- Loading Screen -->
   <div id="loadingScreen">
     <video autoplay playsinline preload="auto">
       <source src="https://storage.googleapis.com/atlas-funner-1/VIDEO/loading_screen_with_audio0311.mp4" type="video/mp4">
@@ -316,9 +334,9 @@
     </video>
   </div>
   
-  <!-- 主菜单（16:9容器） -->
+  <!-- Main Menu (16:9 container) -->
   <div id="mainMenu">
-    <!-- 顶部区域 -->
+    <!-- Top Bar -->
     <div class="top-bar dev-editable">
       <div class="version"></div>
       <div>
@@ -326,34 +344,35 @@
         <button class="devmode-btn" onclick="toggleDevMode()">Developer Mode</button>
       </div>
     </div>
-    <!-- 中间区域 -->
+    <!-- Middle Area -->
     <div class="middle-area">
-      <!-- 主画面背景图片 -->
+      <!-- Main Image Container -->
       <div class="main-image-container dev-editable">
         <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/image/main16-9.png" alt="Main Menu Background">
-      </div>
-      <!-- 开始游戏按钮 -->
-      <div class="middle-button dev-editable">
-        <button id="btnStart" onclick="startGame()">
-          <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="Start Game">
-        </button>
+        <!-- Start Game Button -->
+        <div class="middle-button dev-editable">
+          <button id="btnStart" onclick="startGame()">
+            <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="Start Game">
+          </button>
+        </div>
+        <!-- Bottom Buttons -->
+        <div class="bottom-buttons dev-editable">
+          <button id="btnLeaderboard" onclick="showLeaderboard()">
+            <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking_list.png" alt="Ranking">
+          </button>
+          <button id="btnHome" onclick="goHome()">
+            <img src="https://storage.googleapis.com/atlas-funner-1/UI/home.png" alt="Main Menu">
+          </button>
+          <button id="btnGallery" onclick="showGallery()">
+            <img src="https://storage.googleapis.com/atlas-funner-1/UI/Field_guide.png" alt="Gallery">
+          </button>
+        </div>
       </div>
     </div>
-    <!-- 底部区域 -->
-    <div class="bottom-buttons dev-editable">
-      <button id="btnLeaderboard" onclick="showLeaderboard()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking_list.png" alt="Ranking">
-      </button>
-      <button id="btnHome" onclick="goHome()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/home.png" alt="Main Menu">
-      </button>
-      <button id="btnGallery" onclick="showGallery()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Field_guide.png" alt="Gallery">
-      </button>
-    </div>
+    
   </div>
   
-  <!-- 游戏关卡区域 -->
+  <!-- Game Logic Area -->
   <div class="game-info" id="gameInfo" style="display:none;">
     Level: <span id="level">1</span> | Steps: <span id="stepCount">0</span>
     <button class="refresh-btn" onclick="refreshImages()">⟳</button>
@@ -369,7 +388,7 @@
     <button id="winButton" onclick="nextLevel()">Next Level</button>
   </div>
   
-  <!-- 模态框： Gallery -->
+  <!-- Modals -->
   <div id="galleryModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeGallery()">&times;</span>
@@ -377,14 +396,12 @@
       <div id="galleryContent" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
     </div>
   </div>
-  <!-- 模态框： Image Detail -->
   <div id="imageDetailModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeImageDetail()">&times;</span>
       <div id="imageDetailContent"></div>
     </div>
   </div>
-  <!-- 模态框： Help -->
   <div id="helpModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeHelp()">&times;</span>
@@ -395,7 +412,6 @@
       <p>4. Developer Function: Click the refresh button 5 times continuously to trigger auto-complete.</p>
     </div>
   </div>
-  <!-- 模态框： Ranking -->
   <div id="leaderboardModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeLeaderboard()">&times;</span>
@@ -403,7 +419,6 @@
       <ul id="leaderboardFullList"></ul>
     </div>
   </div>
-  <!-- 模态框： Settings -->
   <div id="settingsModal" class="modal">
     <div class="modal-content">
       <span class="close" onclick="closeSettings()">&times;</span>
@@ -421,21 +436,21 @@
         <input type="range" id="devOffsetY" min="-50" max="50" value="0" />
       </div>
       <div>
-        <label for="devScale">UI Scale:</label>
+        <label for="devScale">UI Scale: </label>
         <input type="range" id="devScale" min="0.5" max="2" step="0.1" value="1" />
       </div>
       <p>Changes are saved to localStorage and will apply on next load.</p>
     </div>
   </div>
   
-  <!-- ========== 音频资源 ========== -->
+  <!-- Audio Resources -->
   <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
   <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
   <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
   <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
   
   <script>
-    /* --------------- Developer Mode Functionality --------------- */
+    /* ---------------- Developer Mode Functionality ---------------- */
     let devModeEnabled = false;
     let devOffsetX = parseFloat(localStorage.getItem('devOffsetX')) || 0;
     let devOffsetY = parseFloat(localStorage.getItem('devOffsetY')) || 0;
@@ -548,7 +563,7 @@
     }
     /* ---------------- Developer Mode End ---------------- */
   
-    /* ---------------- 登录画面处理 ---------------- */
+    /* Login Screen Handling */
     document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
       document.getElementById("loadingScreen").style.display = "flex";
@@ -556,7 +571,7 @@
       loadingVideo.play().catch(e => console.log("Loading video playback failed:", e));
     });
   
-    /* ---------------- 更新版本号 ---------------- */
+    /* Update Version Number */
     function updateVersion() {
       let now = new Date();
       let dateStr = now.getFullYear().toString() +
@@ -569,7 +584,7 @@
     }
     updateVersion();
   
-    /* ---------------- 设置模态框处理 ---------------- */
+    /* Settings Modal Handling */
     function showSettings() {
       document.getElementById("settingsModal").style.display = "block";
       updateDevControls();
@@ -582,7 +597,7 @@
       document.getElementById("gameMusic").volume = this.value;
     });
   
-    /* ---------------- 游戏关卡及逻辑 ---------------- */
+    /* Game Level and Logic */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -644,6 +659,7 @@
     const winMessage = document.getElementById('winMessage');
     const finalStepsEl = document.getElementById('finalSteps');
     const leaderboardList = document.getElementById('leaderboardList');
+    const mainMenu = document.getElementById('mainMenu');
   
     function initLevel() {
       let cols, rows;
@@ -886,7 +902,7 @@
       initLevel();
     }
     function startGame() {
-      // 点击 Start Game：停止主菜单背景音乐，启动游戏背景音乐，并进入游戏关卡
+      // 点击“Start Game”：停止主 menu 背景音乐，启动游戏背景音乐，并进入游戏关卡
       const bgMusic = document.getElementById('bgMusic');
       bgMusic.pause();
       const gameMusic = document.getElementById('gameMusic');
@@ -904,7 +920,7 @@
       return array;
     }
   
-    /* ---------------- 载入画面处理 ---------------- */
+    /* Loading Screen Handling */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
