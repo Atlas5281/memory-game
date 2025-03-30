@@ -1,23 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>FUNNER Flip Game</title>
   <style>
-    /* ------------------ General Styles ------------------ */
+    /* ---------- 基本样式 ---------- */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
-      position: relative;
       overflow: hidden;
     }
-    /* ------------------ Login Screen ------------------ */
+    /* ---------- 登录画面 ---------- */
     #loginScreen {
-      position: fixed;
-      top: 0; left: 0;
+      position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
       background: url("https://storage.googleapis.com/atlas-funner-1/image/main16-9.png") no-repeat center center;
       background-size: cover;
@@ -33,14 +31,14 @@
       color: #fff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    /* ------------------ Loading Screen ------------------ */
+    /* ---------- 载入画面 ---------- */
     #loadingScreen {
-      position: fixed;
-      top: 0; left: 0;
+      position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
       background: #fff;
-      z-index: 200;
+      z-index: 250;
       display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
     }
@@ -49,34 +47,30 @@
       border: 0; outline: none;
       display: block;
     }
-    /* ------------------ 主菜单外层容器 ------------------ */
+    /* ---------- 主菜单外层容器（固定全屏） ---------- */
     #mainMenuWrapper {
       display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: #000;
-      z-index: 100;
+      z-index: 200;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    /* ------------------ Main Menu (16:9 container) ------------------ */
+    /* ---------- 主菜单（16:9容器） ---------- */
     #mainMenu {
       width: 100%;
       max-width: 1000px;
-      /* 固定16:9比例 */
       height: calc(100vw * 9 / 16);
       max-height: calc(100vh - 20px);
       background: #000;
-      position: relative;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
     }
-    /* 顶部区域 (占10%) */
+    /* 顶部区域（10%） */
     .top-bar {
       width: 100%;
       flex: 0 0 10%;
@@ -92,16 +86,14 @@
       padding: 2px 5px;
       border-radius: 5px;
     }
-    .top-bar button.settings-btn,
-    .top-bar button.devmode-btn {
+    .top-bar button {
       background: transparent;
       border: none;
       font-size: 24px;
-      color: #000;
       cursor: pointer;
       margin-left: 10px;
     }
-    /* 中间区域 (占70%) */
+    /* 中间区域（70%） */
     .middle-area {
       flex: 0 0 70%;
       width: 100%;
@@ -133,14 +125,13 @@
       border: none;
       cursor: pointer;
       width: 50%;
-      max-width: 100%;
     }
     .middle-button button img {
       width: 100%;
       height: auto;
       object-fit: contain;
     }
-    /* 底部区域 (占20%) */
+    /* 底部区域（20%） */
     .bottom-buttons {
       flex: 0 0 20%;
       width: 100%;
@@ -154,17 +145,15 @@
       border: none;
       cursor: pointer;
       width: 25%;
-      max-width: 100%;
     }
     .bottom-buttons button img {
       width: 100%;
       height: auto;
       object-fit: contain;
     }
-    /* ------------------ Game Level Area ------------------ */
+    /* ---------- 游戏关卡区域 ---------- */
     .game-info {
-      width: 100%;
-      max-width: 500px;
+      width: 100%; max-width: 500px;
       text-align: center;
       margin: 10px auto;
       font-size: 16px;
@@ -184,13 +173,11 @@
       display: grid;
       gap: 5px;
       margin: 10px auto;
-      width: 90%;
-      max-width: 500px;
+      width: 90%; max-width: 500px;
       justify-content: center;
     }
     .card {
-      width: 60px;
-      height: 60px;
+      width: 60px; height: 60px;
       perspective: 800px;
       cursor: pointer;
       position: relative;
@@ -200,8 +187,7 @@
       pointer-events: none;
     }
     .card-inner {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       transform-style: preserve-3d;
       transition: transform 0.3s ease;
       border-radius: 5px;
@@ -209,9 +195,7 @@
     .card.flipped .card-inner { transform: rotateY(180deg); }
     .card.matched .card-inner { transform: rotateY(180deg); pointer-events: none; }
     .card-face {
-      position: absolute;
-      width: 100%;
-      height: 100%;
+      position: absolute; width: 100%; height: 100%;
       backface-visibility: hidden;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -225,8 +209,7 @@
       overflow: hidden;
     }
     .card-front img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
     }
     .card-back {
@@ -234,9 +217,7 @@
       background-size: cover;
     }
     #winMessage {
-      position: absolute;
-      top: 50%;
-      left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       background: #fff;
       padding: 20px 30px;
@@ -256,7 +237,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    /* ------------------ Modal Styles ------------------ */
+    /* ---------- Modal 样式 ---------- */
     .modal {
       display: none;
       position: fixed;
@@ -288,7 +269,7 @@
       cursor: pointer;
     }
     .close:hover, .close:focus { color: black; }
-    /* ------------------ Settings Modal ------------------ */
+    /* ---------- 设置模态框 ---------- */
     #settingsModal {
       display: none;
       position: fixed;
@@ -302,7 +283,7 @@
     #settingsModal .modal-content {
       margin: 20% auto;
     }
-    /* ------------------ Developer Mode Helper ------------------ */
+    /* ---------- Developer Mode 辅助样式 ---------- */
     .dev-editable { }
     .dev-editable.dev-mode { outline: 2px dashed red; }
     .resize-handle {
@@ -333,7 +314,7 @@
   
   <!-- 主菜单外层容器 -->
   <div id="mainMenuWrapper">
-    <!-- 主菜单 (16:9) -->
+    <!-- 主菜单（16:9容器） -->
     <div id="mainMenu">
       <!-- 顶部区域 -->
       <div class="top-bar dev-editable">
@@ -600,7 +581,7 @@
       document.getElementById("gameMusic").volume = this.value;
     });
   
-    /* ---------------- Game Level and Logic ---------------- */
+    /* ---------------- Game Logic and Level Handling ---------------- */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
