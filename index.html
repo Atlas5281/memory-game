@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>FUNNER Flip Game</title>
   <style>
-    /* ------------------ 通用样式 ------------------ */
+    /* ------------------ General Styles ------------------ */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
       position: relative;
+      overflow: hidden;
     }
-    /* ------------------ 登录画面 ------------------ */
+    /* ------------------ Login Screen ------------------ */
     #loginScreen {
-      position: fixed; top: 0; left: 0;
+      position: fixed;
+      top: 0; left: 0;
       width: 100%; height: 100%;
       background: url("https://storage.googleapis.com/atlas-funner-1/image/main16-9.png") no-repeat center center;
       background-size: cover;
@@ -23,18 +25,22 @@
       cursor: pointer;
     }
     #loginScreen .login-text {
-      position: absolute; bottom: 20px; width: 100%;
-      text-align: center; font-size: 28px; color: #fff;
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 28px;
+      color: #fff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
-    /* ------------------ 载入画面 ------------------ */
+    /* ------------------ Loading Screen ------------------ */
     #loadingScreen {
-      position: fixed; top: 0; left: 0;
+      position: fixed;
+      top: 0; left: 0;
       width: 100%; height: 100%;
       background: #fff;
       z-index: 200;
       display: none;
-      display: flex;
       align-items: center;
       justify-content: center;
     }
@@ -43,11 +49,26 @@
       border: 0; outline: none;
       display: block;
     }
-    /* ------------------ 主菜单（16:9容器） ------------------ */
-    #mainMenu {
+    /* ------------------ 主菜单外层容器 ------------------ */
+    #mainMenuWrapper {
       display: none;
+      position: fixed;
+      top: 0; left: 0;
       width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    /* ------------------ Main Menu (16:9 container) ------------------ */
+    #mainMenu {
+      width: 100%;
+      max-width: 1000px;
+      /* 固定16:9比例 */
       height: calc(100vw * 9 / 16);
+      max-height: calc(100vh - 20px);
       background: #000;
       position: relative;
       display: flex;
@@ -55,24 +76,32 @@
       justify-content: space-between;
       align-items: center;
     }
-    /* 顶部区域：10% */
+    /* 顶部区域 (占10%) */
     .top-bar {
-      width: 100%; flex: 0 0 10%;
-      display: flex; justify-content: space-between; align-items: center;
+      width: 100%;
+      flex: 0 0 10%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 0 5%;
     }
     .top-bar .version {
-      font-size: 14px; color: gray;
+      font-size: 14px;
+      color: gray;
       background: rgba(255,255,255,0.7);
-      padding: 2px 5px; border-radius: 5px;
+      padding: 2px 5px;
+      border-radius: 5px;
     }
     .top-bar button.settings-btn,
     .top-bar button.devmode-btn {
-      background: transparent; border: none;
-      font-size: 24px; color: #000; cursor: pointer;
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      color: #000;
+      cursor: pointer;
       margin-left: 10px;
     }
-    /* 中间区域：70% */
+    /* 中间区域 (占70%) */
     .middle-area {
       flex: 0 0 70%;
       width: 100%;
@@ -82,65 +111,97 @@
       align-items: center;
     }
     .main-image-container {
-      flex: 1; width: 100%;
-      display: flex; justify-content: center; align-items: center;
+      flex: 1;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .main-image-container img {
-      max-width: 100%; max-height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
     }
     .middle-button {
       flex: 1;
-      display: flex; justify-content: center; align-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .middle-button button {
-      background: transparent; border: none; cursor: pointer;
-      width: 50%; max-width: 100%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 50%;
+      max-width: 100%;
     }
     .middle-button button img {
-      width: 100%; height: auto; object-fit: contain;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
     }
-    /* 底部区域：20% */
+    /* 底部区域 (占20%) */
     .bottom-buttons {
       flex: 0 0 20%;
       width: 100%;
-      display: flex; justify-content: space-around; align-items: center;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
       padding: 0 5%;
     }
     .bottom-buttons button {
-      background: transparent; border: none; cursor: pointer;
-      width: 25%; max-width: 100%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 25%;
+      max-width: 100%;
     }
     .bottom-buttons button img {
-      width: 100%; height: auto; object-fit: contain;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
     }
-    /* ------------------ 游戏关卡区域 ------------------ */
+    /* ------------------ Game Level Area ------------------ */
     .game-info {
-      width: 100%; max-width: 500px;
-      text-align: center; margin: 10px auto;
-      font-size: 16px; background: #fff;
-      padding: 10px; border-radius: 10px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      margin: 10px auto;
+      font-size: 16px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 10px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .game-info button.refresh-btn {
-      background: none; border: none;
-      font-size: 20px; cursor: pointer; margin-left: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-left: 10px;
     }
     .card-grid {
-      display: grid; gap: 5px;
-      margin: 10px auto; width: 90%; max-width: 500px;
+      display: grid;
+      gap: 5px;
+      margin: 10px auto;
+      width: 90%;
+      max-width: 500px;
       justify-content: center;
     }
     .card {
-      width: 60px; height: 60px;
-      perspective: 800px; cursor: pointer;
+      width: 60px;
+      height: 60px;
+      perspective: 800px;
+      cursor: pointer;
       position: relative;
     }
     .card.blank {
-      visibility: hidden; pointer-events: none;
+      visibility: hidden;
+      pointer-events: none;
     }
     .card-inner {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       transform-style: preserve-3d;
       transition: transform 0.3s ease;
       border-radius: 5px;
@@ -148,71 +209,111 @@
     .card.flipped .card-inner { transform: rotateY(180deg); }
     .card.matched .card-inner { transform: rotateY(180deg); pointer-events: none; }
     .card-face {
-      position: absolute; width: 100%; height: 100%;
+      position: absolute;
+      width: 100%;
+      height: 100%;
       backface-visibility: hidden;
       border-radius: 5px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: flex; justify-content: center; align-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .card-front {
-      background: #fff; transform: rotateY(180deg);
+      background: #fff;
+      transform: rotateY(180deg);
       overflow: hidden;
     }
     .card-front img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
-    /* 使用新卡牌背面图片 */
     .card-back {
       background: url("https://storage.googleapis.com/atlas-funner-1/image/logo_image_cardback.jpg") no-repeat center center;
       background-size: cover;
     }
     #winMessage {
-      position: absolute; top: 50%; left: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
-      background: #fff; padding: 20px 30px;
-      border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      display: none; text-align: center; z-index: 10;
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: none;
+      text-align: center;
+      z-index: 10;
     }
     #winMessage button {
-      margin-top: 10px; padding: 8px 15px;
-      font-size: 16px; background: #4CAF50;
-      color: #fff; border: none; border-radius: 5px;
+      margin-top: 10px;
+      padding: 8px 15px;
+      font-size: 16px;
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
-    /* ------------------ 模态框样式 ------------------ */
+    /* ------------------ Modal Styles ------------------ */
     .modal {
-      display: none; position: fixed; z-index: 20;
-      left: 0; top: 0; width: 100%; height: 100%;
-      overflow: auto; background-color: rgba(0,0,0,0.5);
+      display: none;
+      position: fixed;
+      z-index: 20;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
     }
     .modal-content {
-      background-color: #fff; margin: 10% auto;
-      padding: 20px; border: 1px solid #888;
-      width: 80%; max-width: 500px;
-      border-radius: 10px; position: relative;
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 10px;
+      position: relative;
     }
     .close {
-      color: #aaa; position: absolute;
-      right: 10px; top: 10px; font-size: 28px;
-      font-weight: bold; cursor: pointer;
+      color: #aaa;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
     }
     .close:hover, .close:focus { color: black; }
-    /* ------------------ 设置模态框 ------------------ */
+    /* ------------------ Settings Modal ------------------ */
     #settingsModal {
-      display: none; position: fixed; z-index: 30;
-      left: 0; top: 0; width: 100%; height: 100%;
+      display: none;
+      position: fixed;
+      z-index: 30;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
       background-color: rgba(0,0,0,0.5);
     }
     #settingsModal .modal-content {
       margin: 20% auto;
     }
-    /* ------------------ 开发者模式辅助样式 ------------------ */
+    /* ------------------ Developer Mode Helper ------------------ */
     .dev-editable { }
     .dev-editable.dev-mode { outline: 2px dashed red; }
     .resize-handle {
-      width: 10px; height: 10px;
-      background: red; position: absolute;
-      right: 0; bottom: 0; cursor: se-resize; z-index: 1000;
+      width: 10px;
+      height: 10px;
+      background: red;
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      cursor: se-resize;
+      z-index: 1000;
     }
   </style>
 </head>
@@ -230,40 +331,43 @@
     </video>
   </div>
   
-  <!-- 主菜单（16:9容器） -->
-  <div id="mainMenu">
-    <!-- 顶部区域 -->
-    <div class="top-bar dev-editable">
-      <div class="version"></div>
-      <div>
-        <button class="settings-btn" onclick="showSettings()">⚙</button>
-        <button class="devmode-btn" onclick="toggleDevMode()">Developer Mode</button>
+  <!-- 主菜单外层容器 -->
+  <div id="mainMenuWrapper">
+    <!-- 主菜单 (16:9) -->
+    <div id="mainMenu">
+      <!-- 顶部区域 -->
+      <div class="top-bar dev-editable">
+        <div class="version"></div>
+        <div>
+          <button class="settings-btn" onclick="showSettings()">⚙</button>
+          <button class="devmode-btn" onclick="toggleDevMode()">Developer Mode</button>
+        </div>
       </div>
-    </div>
-    <!-- 中间区域 -->
-    <div class="middle-area">
-      <!-- 主画面背景图片 -->
-      <div class="main-image-container dev-editable">
-        <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/image/main16-9.png" alt="Main Menu Background">
+      <!-- 中间区域 -->
+      <div class="middle-area">
+        <!-- 主画面背景图片 -->
+        <div class="main-image-container dev-editable">
+          <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/image/main16-9.png" alt="Main Menu Background">
+        </div>
+        <!-- 开始游戏按钮 -->
+        <div class="middle-button dev-editable">
+          <button id="btnStart" onclick="startGame()">
+            <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="Start Game">
+          </button>
+        </div>
       </div>
-      <!-- 开始游戏按钮 -->
-      <div class="middle-button dev-editable">
-        <button id="btnStart" onclick="startGame()">
-          <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="Start Game">
+      <!-- 底部区域 -->
+      <div class="bottom-buttons dev-editable">
+        <button id="btnLeaderboard" onclick="showLeaderboard()">
+          <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking_list.png" alt="Ranking">
+        </button>
+        <button id="btnHome" onclick="goHome()">
+          <img src="https://storage.googleapis.com/atlas-funner-1/UI/home.png" alt="Main Menu">
+        </button>
+        <button id="btnGallery" onclick="showGallery()">
+          <img src="https://storage.googleapis.com/atlas-funner-1/UI/Field_guide.png" alt="Gallery">
         </button>
       </div>
-    </div>
-    <!-- 底部区域 -->
-    <div class="bottom-buttons dev-editable">
-      <button id="btnLeaderboard" onclick="showLeaderboard()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking_list.png" alt="Ranking">
-      </button>
-      <button id="btnHome" onclick="goHome()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/home.png" alt="Main Menu">
-      </button>
-      <button id="btnGallery" onclick="showGallery()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Field_guide.png" alt="Gallery">
-      </button>
     </div>
   </div>
   
@@ -342,7 +446,7 @@
     </div>
   </div>
   
-  <!-- ---------------- 音频资源 ---------------- -->
+  <!-- ---------------- Audio Resources ---------------- -->
   <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
   <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
   <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
@@ -462,7 +566,7 @@
     }
     /* ---------------- Developer Mode End ---------------- */
   
-    /* ---------------- 登录画面处理 ---------------- */
+    /* ---------------- Login Screen Handling ---------------- */
     document.getElementById("loginScreen").addEventListener("click", function() {
       this.style.display = "none";
       document.getElementById("loadingScreen").style.display = "flex";
@@ -470,7 +574,7 @@
       loadingVideo.play().catch(e => console.log("Loading video playback failed:", e));
     });
   
-    /* ---------------- 更新版本号 ---------------- */
+    /* ---------------- Update Version Number ---------------- */
     function updateVersion() {
       let now = new Date();
       let dateStr = now.getFullYear().toString() +
@@ -483,7 +587,7 @@
     }
     updateVersion();
   
-    /* ---------------- 设置模态框处理 ---------------- */
+    /* ---------------- Settings Modal Handling ---------------- */
     function showSettings() {
       document.getElementById("settingsModal").style.display = "block";
       updateDevControls();
@@ -496,7 +600,7 @@
       document.getElementById("gameMusic").volume = this.value;
     });
   
-    /* ---------------- 游戏关卡及逻辑 ---------------- */
+    /* ---------------- Game Level and Logic ---------------- */
     const imagesPool = [
       'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
       'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
@@ -800,12 +904,12 @@
       initLevel();
     }
     function startGame() {
-      // 点击“Start Game”：停止主菜单背景音乐，启动游戏背景音乐，并进入游戏关卡
+      // 点击 Start Game：停止主菜单背景音乐，启动游戏背景音乐，并进入游戏关卡
       const bgMusic = document.getElementById('bgMusic');
       bgMusic.pause();
       const gameMusic = document.getElementById('gameMusic');
       gameMusic.play().catch(() => {});
-      document.getElementById('mainMenu').style.display = 'none';
+      document.getElementById('mainMenuWrapper').style.display = 'none';
       document.getElementById('gameInfo').style.display = 'block';
       initLevel();
     }
@@ -818,14 +922,14 @@
       return array;
     }
   
-    /* ---------------- 载入画面处理 ---------------- */
+    /* ---------------- Loading Screen Handling ---------------- */
     window.addEventListener('load', () => {
       const loadingScreen = document.getElementById('loadingScreen');
       const loadingVideo = document.querySelector('#loadingScreen video');
       loadingVideo.addEventListener('canplaythrough', () => {
         loadingVideo.onended = () => {
           loadingScreen.style.display = 'none';
-          document.getElementById('mainMenu').style.display = 'flex';
+          document.getElementById('mainMenuWrapper').style.display = 'flex';
           const bgMusic = document.getElementById('bgMusic');
           bgMusic.play().catch(() => {});
           applyDevSettings();
@@ -834,7 +938,7 @@
       setTimeout(() => {
         if (loadingScreen.style.display !== 'none') {
           loadingScreen.style.display = 'none';
-          document.getElementById('mainMenu').style.display = 'flex';
+          document.getElementById('mainMenuWrapper').style.display = 'flex';
           const bgMusic = document.getElementById('bgMusic');
           bgMusic.play().catch(() => {});
           applyDevSettings();
