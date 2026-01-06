@@ -1,846 +1,326 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>FUNNER Flip Game</title>
   <style>
-    /* ------------------ 通用样式 ------------------ */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      position: relative;
+    /* 全局設定 */
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background-color: #1a1a1a; }
+    body { font-family: "Microsoft JhengHei", sans-serif; display: flex; justify-content: center; align-items: center; color: #fff; }
+
+    /* 畫面容器 */
+    .screen {
+      position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+      display: none; flex-direction: column; align-items: center;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
     }
-    /* ------------------ 登录画面 ------------------ */
-    #loginScreen {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: url("https://storage.googleapis.com/atlas-funner-1/image/main16-9.png") no-repeat center center;
-      background-size: cover;
-      z-index: 300;
+
+    /* --- 1. 啟動畫面 --- */
+    #loginScreen { display: flex; z-index: 2000; background-image: url("./assets/ui/login_bg.png"); cursor: pointer; }
+    .tap-hint {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      bottom: 20%; color: #fff; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px;
+      animation: blink 2s infinite; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+
+    /* --- 2. 主選單 (UI 重構版) --- */
+    #mainMenu { 
+      background-image: url("./assets/ui/login_bg.png"); 
+    }
+    
+    /* === 修正重點：PLAY 按鈕 === */
+    .main-play-btn {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%); /* 只做水平居中 */
+      
+      /* 位置控制：數字越小越靠底，避開上方 Logo */
+      bottom: 22%; 
+      
+      /* 大小控制：原本太小，現在設為螢幕寬度的 50% */
+      width: 50vw; 
+      max-width: 280px; /* 電腦版最大限制 */
+      height: auto;
+      
       cursor: pointer;
+      transition: transform 0.1s;
+      filter: drop-shadow(0 5px 15px rgba(0,0,0,0.4)); /* 增加陰影讓它浮起來 */
+      z-index: 100;
     }
-    #loginScreen .login-text {
-      position: absolute; bottom: 20px; width: 100%;
-      text-align: center; font-size: 28px; color: #fff;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    }
-    /* ------------------ 载入画面 ------------------ */
-    #loadingScreen {
-      position: fixed; top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: #fff;
-      z-index: 200;
-      display: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #loadingScreen video {
-      width: 90%; max-width: 600px;
-      border: 0; outline: none;
-      display: block;
-    }
-    /* ------------------ 主菜单（16:9容器） ------------------ */
-    #mainMenu {
-      display: none;
-      width: 100vw;
-      height: calc(100vw * 9 / 16);
-      background: #000;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-    }
-    /* 顶部区域：10% */
-    .top-bar {
-      width: 100%; flex: 0 0 10%;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0 5%;
-    }
-    .top-bar .version {
-      font-size: 14px; color: gray;
-      background: rgba(255,255,255,0.7);
-      padding: 2px 5px; border-radius: 5px;
-    }
-    .top-bar button.settings-btn,
-    .top-bar button.devmode-btn {
-      background: transparent; border: none;
-      font-size: 24px; color: #000; cursor: pointer;
-      margin-left: 10px;
-    }
-    /* 中间区域：70% */
-    .middle-area {
-      flex: 0 0 70%;
+    .main-play-btn:active { transform: translateX(-50%) scale(0.95); }
+
+    /* === 修正重點：底部功能列 === */
+    .dock-container {
+      position: absolute; 
+      bottom: 4%; /* 緊貼底部 */
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; 
+      justify-content: center; /* 水平排列居中 */
+      gap: 15px; /* 按鈕之間的間距 */
+      padding-bottom: 10px;
+      z-index: 100;
     }
-    .main-image-container {
-      flex: 1; width: 100%;
-      display: flex; justify-content: center; align-items: center;
+
+    .dock-btn {
+      /* 大小控制：加大到 28vw，確保手機好點擊 */
+      width: 28vw; 
+      max-width: 120px; 
+      height: auto;
+      cursor: pointer;
+      transition: transform 0.2s;
+      filter: drop-shadow(0 3px 5px rgba(0,0,0,0.5));
     }
-    .main-image-container img {
-      max-width: 100%; max-height: 100%;
-      object-fit: contain;
+    .dock-btn:active { transform: scale(0.9); }
+    /* 當前頁面圖示稍微亮一點 */
+    .dock-btn.active { filter: brightness(1.2) drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+
+
+    /* --- 3. 遊戲畫面 --- */
+    #gameArea { background-color: #222; }
+    .nav-bar {
+      width: 100%; height: 60px; display: flex; justify-content: space-between; align-items: center;
+      padding: 0 15px; background: #333; border-bottom: 1px solid #444; color: #fff;
     }
-    .middle-button {
-      flex: 1;
-      display: flex; justify-content: center; align-items: center;
+    .version-tag { font-size: 12px; color: #666; cursor: pointer; padding: 10px; }
+    .settings-btn { font-size: 22px; cursor: pointer; padding: 5px; }
+
+    #cardGrid {
+      display: grid; gap: 8px; padding: 15px; width: 100vw; max-width: 450px;
+      margin: auto; justify-content: center; align-content: center; flex-grow: 1;
     }
-    .middle-button button {
-      background: transparent; border: none; cursor: pointer;
-      width: 50%; max-width: 100%;
-    }
-    .middle-button button img {
-      width: 100%; height: auto; object-fit: contain;
-    }
-    /* 底部区域：20% */
-    .bottom-buttons {
-      flex: 0 0 20%;
-      width: 100%;
-      display: flex; justify-content: space-around; align-items: center;
-      padding: 0 5%;
-    }
-    .bottom-buttons button {
-      background: transparent; border: none; cursor: pointer;
-      width: 25%; max-width: 100%;
-    }
-    .bottom-buttons button img {
-      width: 100%; height: auto; object-fit: contain;
-    }
-    /* ------------------ 游戏关卡区域 ------------------ */
-    .game-info {
-      width: 100%; max-width: 500px;
-      text-align: center; margin: 10px auto;
-      font-size: 16px; background: #fff;
-      padding: 10px; border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .game-info button.refresh-btn {
-      background: none; border: none;
-      font-size: 20px; cursor: pointer; margin-left: 10px;
-    }
-    .card-grid {
-      display: grid; gap: 5px;
-      margin: 10px auto; width: 90%; max-width: 500px;
-      justify-content: center;
-    }
-    .card {
-      width: 60px; height: 60px;
-      perspective: 800px; cursor: pointer;
-      position: relative;
-    }
-    .card.blank {
-      visibility: hidden; pointer-events: none;
-    }
-    .card-inner {
-      width: 100%; height: 100%;
-      transform-style: preserve-3d;
-      transition: transform 0.3s ease;
-      border-radius: 5px;
-    }
+    .card { position: relative; cursor: pointer; aspect-ratio: 1 / 1; width: 100%; }
+    .card-inner { width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
     .card.flipped .card-inner { transform: rotateY(180deg); }
-    .card.matched .card-inner { transform: rotateY(180deg); pointer-events: none; }
-    .card-face {
-      position: absolute; width: 100%; height: 100%;
-      backface-visibility: hidden;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: flex; justify-content: center; align-items: center;
-    }
-    .card-front {
-      background: #fff; transform: rotateY(180deg);
-      overflow: hidden;
-    }
-    .card-front img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-    /* 使用新卡牌背面图片 */
-    .card-back {
-      background: url("https://storage.googleapis.com/atlas-funner-1/image/logo_image_cardback.jpg") no-repeat center center;
-      background-size: cover;
-    }
-    #winMessage {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff; padding: 20px 30px;
-      border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      display: none; text-align: center; z-index: 10;
-    }
-    #winMessage button {
-      margin-top: 10px; padding: 8px 15px;
-      font-size: 16px; background: #4CAF50;
-      color: #fff; border: none; border-radius: 5px;
-      cursor: pointer;
-    }
-    /* ------------------ 模态框样式 ------------------ */
-    .modal {
-      display: none; position: fixed; z-index: 20;
-      left: 0; top: 0; width: 100%; height: 100%;
-      overflow: auto; background-color: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-      background-color: #fff; margin: 10% auto;
-      padding: 20px; border: 1px solid #888;
-      width: 80%; max-width: 500px;
-      border-radius: 10px; position: relative;
-    }
-    .close {
-      color: #aaa; position: absolute;
-      right: 10px; top: 10px; font-size: 28px;
-      font-weight: bold; cursor: pointer;
-    }
-    .close:hover, .close:focus { color: black; }
-    /* ------------------ 设置模态框 ------------------ */
-    #settingsModal {
-      display: none; position: fixed; z-index: 30;
-      left: 0; top: 0; width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.5);
-    }
-    #settingsModal .modal-content {
-      margin: 20% auto;
-    }
-    /* ------------------ 开发者模式辅助样式 ------------------ */
-    .dev-editable { }
-    .dev-editable.dev-mode { outline: 2px dashed red; }
-    .resize-handle {
-      width: 10px; height: 10px;
-      background: red; position: absolute;
-      right: 0; bottom: 0; cursor: se-resize; z-index: 1000;
-    }
+    .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; border: 1px solid #444; }
+    .card-back { background: url("./assets/ui/card_back.jpg") center/cover; }
+    .card-front { transform: rotateY(180deg); background: #fff; overflow: hidden; }
+    .card-front img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .center-card { cursor: default !important; border: 2px dashed #555 !important; background: rgba(255,255,255,0.05); display: flex; justify-content: center; align-items: center; border-radius: 12px; }
+    .center-card::after { content: "🔒"; font-size: 1.5rem; opacity: 0.3; }
+
+    /* --- 4. 圖鑑 & 排行榜畫面 --- */
+    #galleryScreen, #leaderboardScreen { background-color: #1a1a1a; padding-top: 70px; overflow-y: auto; display: none; }
+    .header-bar { position: fixed; top: 0; width: 100%; height: 60px; background: #333; display: flex; align-items: center; justify-content: center; z-index: 100; border-bottom: 1px solid #444; font-weight: bold; font-size: 18px; }
+    .close-icon { position: absolute; right: 20px; font-size: 24px; cursor: pointer; }
+
+    /* 圖鑑 Grid */
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; padding: 20px; max-width: 500px; margin: 0 auto; }
+    .gallery-item { aspect-ratio: 1/1; background: #2a2a2a; border-radius: 10px; border: 2px solid #333; overflow: hidden; position: relative; }
+    .gallery-item.locked::after { content: "?"; position: absolute; top:50%; left:50%; transform:translate(-50%,-50%); color: #555; font-size: 24px; }
+    .gallery-item.unlocked { border-color: #ffd700; cursor: pointer; }
+    .gallery-item img { width: 100%; height: 100%; display: none; object-fit: cover; }
+    .gallery-item.unlocked img { display: block; }
+
+    /* 排行榜 List */
+    .rank-list { width: 90%; max-width: 400px; background: #2a2a2a; border-radius: 15px; padding: 20px; margin: 20px auto; }
+    .rank-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #444; font-size: 14px; }
+    .rank-header { color: #ffd700; border-bottom: 2px solid #ffd700; font-weight: bold; }
+
+    /* 彈窗 */
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 5000; }
+    .modal { background: #333; padding: 25px; border-radius: 20px; text-align: center; width: 80%; max-width: 320px; border: 1px solid #555; }
+    .modal h3 { color: #ffd700; margin-bottom: 15px; }
+    .modal-btn { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+    .btn-primary { background: #007AFF; color: #fff; }
+    .btn-danger { background: #ff453a; color: #fff; }
+    .btn-close { background: #444; color: #ccc; }
+
+    @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
   </style>
 </head>
 <body>
-  <!-- 登录画面 -->
-  <div id="loginScreen">
-    <div class="login-text">Click anywhere to start</div>
+
+  <div id="loginScreen" class="screen" onclick="gotoMenu()">
+    <div class="tap-hint">TAP TO START</div>
   </div>
-  
-  <!-- 载入画面 -->
-  <div id="loadingScreen">
-    <video autoplay playsinline preload="auto">
-      <source src="https://storage.googleapis.com/atlas-funner-1/VIDEO/loading_screen_with_audio0311.mp4" type="video/mp4">
-      Your browser does not support video playback.
-    </video>
+
+  <div id="mainMenu" class="screen">
+    
+    <img src="./assets/ui/play_btn.png" class="main-play-btn" onclick="gotoGame()">
+
+    <div class="dock-container">
+      <img src="./assets/ui/gallery_btn.png" class="dock-btn" onclick="openGallery()">
+      <img src="./assets/ui/home_btn.png" class="dock-btn active"> 
+      <img src="./assets/ui/rank_btn.png" class="dock-btn" onclick="openLeaderboard()">
+    </div>
+
   </div>
-  
-  <!-- 主菜单（16:9容器） -->
-  <div id="mainMenu">
-    <!-- 顶部区域 -->
-    <div class="top-bar dev-editable">
-      <div class="version"></div>
-      <div>
-        <button class="settings-btn" onclick="showSettings()">⚙</button>
-        <button class="devmode-btn" onclick="toggleDevMode()">Developer Mode</button>
-      </div>
-    </div>
-    <!-- 中间区域 -->
-    <div class="middle-area">
-      <!-- 主画面背景图片 -->
-      <div class="main-image-container dev-editable">
-        <img id="mainMenuImage" src="https://storage.googleapis.com/atlas-funner-1/image/main16-9.png" alt="Main Menu Background">
-      </div>
-      <!-- 开始游戏按钮 -->
-      <div class="middle-button dev-editable">
-        <button id="btnStart" onclick="startGame()">
-          <img src="https://storage.googleapis.com/atlas-funner-1/UI/play.png" alt="Start Game">
-        </button>
-      </div>
-    </div>
-    <!-- 底部区域 -->
-    <div class="bottom-buttons dev-editable">
-      <button id="btnLeaderboard" onclick="showLeaderboard()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Ranking_list.png" alt="Ranking">
-      </button>
-      <button id="btnHome" onclick="goHome()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/home.png" alt="Main Menu">
-      </button>
-      <button id="btnGallery" onclick="showGallery()">
-        <img src="https://storage.googleapis.com/atlas-funner-1/UI/Field_guide.png" alt="Gallery">
-      </button>
+
+  <div id="galleryScreen" class="screen">
+    <div class="header-bar">生物圖鑑<div class="close-icon" onclick="backToMenu()">×</div></div>
+    <div id="galleryGrid" class="gallery-grid"></div>
+  </div>
+
+  <div id="leaderboardScreen" class="screen">
+    <div class="header-bar">榮譽排行榜<div class="close-icon" onclick="backToMenu()">×</div></div>
+    <div class="rank-list" id="rankList">
+      <div class="rank-row rank-header"><span>排名 / 玩家</span><span>步數 / 時間</span></div>
+      <div style="text-align:center; padding:20px; color:#666;">暫無紀錄</div>
     </div>
   </div>
-  
-  <!-- 游戏关卡区域 -->
-  <div class="game-info" id="gameInfo" style="display:none;">
-    Level: <span id="level">1</span> | Steps: <span id="stepCount">0</span>
-    <button class="refresh-btn" onclick="refreshImages()">⟳</button>
-  </div>
-  <div class="card-grid hidden" id="cardGrid"></div>
-  <div id="winMessage">
-    <h2>Congratulations!</h2>
-    <p>Steps this level: <span id="finalSteps">0</span></p>
-    <div id="leaderboard" style="display:none;">
-      <h3>Ranking (Level 3)</h3>
-      <ul id="leaderboardList"></ul>
+
+  <div id="gameArea" class="screen">
+    <div class="nav-bar">
+      <div class="version-tag" onclick="handleDevClick()">v1.0.0</div>
+      <div style="font-weight:bold; color:#ffd700;">LEVEL <span id="lvText">1</span></div>
+      <div class="settings-btn" onclick="openSettings()">⚙️</div>
     </div>
-    <button id="winButton" onclick="nextLevel()">Next Level</button>
+    <div id="cardGrid"></div>
+    <div style="color:#888; padding-bottom:20px; font-weight:bold;">STEPS: <span id="stText">0</span></div>
   </div>
-  
-  <!-- 模态框： Gallery -->
-  <div id="galleryModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeGallery()">&times;</span>
-      <h2>Gallery</h2>
-      <div id="galleryContent" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+
+  <div id="settingsOverlay" class="overlay">
+    <div class="modal">
+      <h3>系統設定</h3>
+      <button class="modal-btn btn-primary" onclick="toggleAudio()">音效: <span id="audioStatus">ON</span></button>
+      <button class="modal-btn btn-danger" onclick="confirmExit()">返回主選單</button>
+      <button class="modal-btn btn-close" onclick="closeOverlay()">繼續遊戲</button>
     </div>
   </div>
-  <!-- 模态框： Image Detail -->
-  <div id="imageDetailModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeImageDetail()">&times;</span>
-      <div id="imageDetailContent"></div>
+
+  <div id="infoOverlay" class="overlay">
+    <div class="modal">
+      <h3 id="infoName">???</h3>
+      <img id="infoImg" src="" style="width:100px; height:100px; object-fit:cover; border-radius:10px; margin:10px auto; display:block;">
+      <p>首次獲得：<br><span id="infoDate" style="color:#ffd700;">---</span></p>
+      <button class="modal-btn btn-close" onclick="closeOverlay()">關閉</button>
     </div>
   </div>
-  <!-- 模态框： Help -->
-  <div id="helpModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeHelp()">&times;</span>
-      <h2>Game Rules</h2>
-      <p>1. Gameplay: Flip two cards to find a matching pair. If they match, they remain face up; otherwise, they flip back.</p>
-      <p>2. Steps: Every two card flips count as one step. Fewer steps indicate better performance.</p>
-      <p>3. Level 3: In Level 3, there is no preview; cards start covered to increase challenge.</p>
-      <p>4. Developer Function: Click the refresh button 5 times continuously to trigger auto-complete.</p>
+
+  <div id="winOverlay" class="overlay">
+    <div class="modal">
+      <h2 style="color:#ffd700; margin-bottom:10px;">LEVEL CLEAR!</h2>
+      <p>消耗步數：<span id="finalSt">0</span></p>
+      <button class="modal-btn btn-primary" onclick="nextLevel()">下一關</button>
     </div>
   </div>
-  <!-- 模态框： Ranking -->
-  <div id="leaderboardModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeLeaderboard()">&times;</span>
-      <h2>Ranking</h2>
-      <ul id="leaderboardFullList"></ul>
-    </div>
-  </div>
-  <!-- 模态框： Settings -->
-  <div id="settingsModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeSettings()">&times;</span>
-      <h2>Settings</h2>
-      <label for="bgVolume">Background Music Volume</label>
-      <input type="range" id="bgVolume" min="0" max="1" step="0.01" value="1" />
-      <br/><br/>
-      <!-- Developer Mode Controls -->
-      <div>
-        <label for="devOffsetX">X Offset (px): </label>
-        <input type="range" id="devOffsetX" min="-50" max="50" value="0" />
-      </div>
-      <div>
-        <label for="devOffsetY">Y Offset (px): </label>
-        <input type="range" id="devOffsetY" min="-50" max="50" value="0" />
-      </div>
-      <div>
-        <label for="devScale">UI Scale:</label>
-        <input type="range" id="devScale" min="0.5" max="2" step="0.1" value="1" />
-      </div>
-      <p>Changes are saved to localStorage and will apply on next load.</p>
-    </div>
-  </div>
-  
-  <!-- ---------------- 音频资源 ---------------- -->
-  <audio id="themeMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
-  <audio id="bgMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
-  <audio id="gameMusic" src="https://storage.googleapis.com/atlas-funner-1/MUSIC/FUNNER_theme_song.mp3" loop></audio>
-  <audio id="matchSound" src="match-sound.mp3" preload="auto"></audio>
-  
+
+  <audio id="bgm" src="./assets/audio/theme.mp3" loop></audio>
+
   <script>
-    /* ---------------- Developer Mode Functionality ---------------- */
-    let devModeEnabled = false;
-    let devOffsetX = parseFloat(localStorage.getItem('devOffsetX')) || 0;
-    let devOffsetY = parseFloat(localStorage.getItem('devOffsetY')) || 0;
-    let devScale = parseFloat(localStorage.getItem('devScale')) || 1;
-    function applyDevSettings() {
-      const elements = document.querySelectorAll('.dev-editable');
-      elements.forEach(el => {
-        el.style.transform = `translate(${devOffsetX}px, ${devOffsetY}px) scale(${devScale})`;
-      });
+    /* 變數宣告 */
+    let lv = 1, st = 0, matched = 0, flipped = [], lock = false;
+    let devClickCount = 0, devTimer = null;
+    const totalFish = 18;
+    const fishDB = ["小丑魚","藍倒吊","黃三角","獅子魚","海馬","水母","海龜","鯨鯊","魟魚","章魚","龍蝦","海星","河豚","比目魚","神仙魚","蝶魚","鮪魚","神秘深海魚"];
+
+    /* 頁面切換 */
+    function gotoMenu() { switchScreen('mainMenu'); playBgm(); }
+    function gotoGame() { switchScreen('gameArea'); lv = 1; initLevel(); }
+    function backToMenu() { switchScreen('mainMenu'); }
+    
+    function switchScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+      const target = document.getElementById(id);
+      target.style.display = (id === 'galleryScreen' || id === 'leaderboardScreen') ? 'block' : 'flex';
     }
-    function updateDevControls() {
-      document.getElementById('devOffsetX').value = devOffsetX;
-      document.getElementById('devOffsetY').value = devOffsetY;
-      document.getElementById('devScale').value = devScale;
+
+    /* 開發者模式 (左上角連點5次) */
+    function handleDevClick() {
+      devClickCount++; clearTimeout(devTimer);
+      if(devClickCount >= 5) { devClickCount = 0; alert("⚡ 開發者模式：跳關成功！"); showWin(); }
+      devTimer = setTimeout(() => devClickCount = 0, 2000);
     }
-    document.getElementById('devOffsetX').addEventListener('input', function() {
-      devOffsetX = parseFloat(this.value);
-      localStorage.setItem('devOffsetX', devOffsetX);
-      applyDevSettings();
-    });
-    document.getElementById('devOffsetY').addEventListener('input', function() {
-      devOffsetY = parseFloat(this.value);
-      localStorage.setItem('devOffsetY', devOffsetY);
-      applyDevSettings();
-    });
-    document.getElementById('devScale').addEventListener('input', function() {
-      devScale = parseFloat(this.value);
-      localStorage.setItem('devScale', devScale);
-      applyDevSettings();
-    });
-    function enableDevMode() {
-      devModeEnabled = true;
-      const editableElements = document.querySelectorAll('.dev-editable');
-      editableElements.forEach(el => {
-        if(getComputedStyle(el).position === 'static'){
-          el.style.position = 'absolute';
-          let rect = el.getBoundingClientRect();
-          el.style.left = rect.left + "px";
-          el.style.top = rect.top + "px";
-        }
-        el.classList.add('dev-mode');
-        el.addEventListener('mousedown', devDragStart);
-        if(!el.querySelector('.resize-handle')){
-          const handle = document.createElement('div');
-          handle.classList.add('resize-handle');
-          el.appendChild(handle);
-          handle.addEventListener('mousedown', devResizeStart);
-        }
-      });
+
+    /* 設定 & 音效 */
+    function openSettings() { document.getElementById('settingsOverlay').style.display = 'flex'; }
+    function closeOverlay() { document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none'); }
+    function confirmExit() { if(confirm("返回主選單？進度將遺失")) { closeOverlay(); backToMenu(); } }
+    function toggleAudio() {
+      const bgm = document.getElementById('bgm');
+      if(bgm.paused) { bgm.play(); document.getElementById('audioStatus').textContent = "ON"; }
+      else { bgm.pause(); document.getElementById('audioStatus').textContent = "OFF"; }
     }
-    function disableDevMode() {
-      devModeEnabled = false;
-      const editableElements = document.querySelectorAll('.dev-editable');
-      editableElements.forEach(el => {
-        el.classList.remove('dev-mode');
-        el.removeEventListener('mousedown', devDragStart);
-        const handle = el.querySelector('.resize-handle');
-        if(handle){
-          handle.removeEventListener('mousedown', devResizeStart);
-          el.removeChild(handle);
-        }
-      });
-    }
-    function toggleDevMode() {
-      if(devModeEnabled) { disableDevMode(); }
-      else { enableDevMode(); }
-    }
-    let dragElem = null, dragOffsetX = 0, dragOffsetY = 0;
-    function devDragStart(e) {
-      if(e.target.classList.contains('resize-handle')) return;
-      dragElem = this;
-      dragOffsetX = e.clientX - dragElem.getBoundingClientRect().left;
-      dragOffsetY = e.clientY - dragElem.getBoundingClientRect().top;
-      document.addEventListener('mousemove', devDragging);
-      document.addEventListener('mouseup', devDragEnd);
-    }
-    function devDragging(e) {
-      if(!dragElem) return;
-      dragElem.style.left = (e.clientX - dragOffsetX) + "px";
-      dragElem.style.top = (e.clientY - dragOffsetY) + "px";
-    }
-    function devDragEnd(e) {
-      document.removeEventListener('mousemove', devDragging);
-      document.removeEventListener('mouseup', devDragEnd);
-      dragElem = null;
-    }
-    let resizeElem = null, initialWidth = 0, initialHeight = 0, startX = 0, startY = 0;
-    function devResizeStart(e) {
-      e.stopPropagation();
-      resizeElem = this.parentElement;
-      const rect = resizeElem.getBoundingClientRect();
-      initialWidth = rect.width;
-      initialHeight = rect.height;
-      startX = e.clientX;
-      startY = e.clientY;
-      document.addEventListener('mousemove', devResizing);
-      document.addEventListener('mouseup', devResizeEnd);
-    }
-    function devResizing(e) {
-      if(!resizeElem) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      resizeElem.style.width = (initialWidth + dx) + "px";
-      resizeElem.style.height = (initialHeight + dy) + "px";
-    }
-    function devResizeEnd(e) {
-      document.removeEventListener('mousemove', devResizing);
-      document.removeEventListener('mouseup', devResizeEnd);
-      resizeElem = null;
-    }
-    /* ---------------- Developer Mode End ---------------- */
-  
-    /* ---------------- 登录画面处理 ---------------- */
-    document.getElementById("loginScreen").addEventListener("click", function() {
-      this.style.display = "none";
-      document.getElementById("loadingScreen").style.display = "flex";
-      const loadingVideo = document.querySelector("#loadingScreen video");
-      loadingVideo.play().catch(e => console.log("Loading video playback failed:", e));
-    });
-  
-    /* ---------------- 更新版本号 ---------------- */
-    function updateVersion() {
-      let now = new Date();
-      let dateStr = now.getFullYear().toString() +
-                    ('0' + (now.getMonth() + 1)).slice(-2) +
-                    ('0' + now.getDate()).slice(-2);
-      let key = 'updateCount_' + dateStr;
-      let count = parseInt(localStorage.getItem(key) || "0") + 1;
-      localStorage.setItem(key, count);
-      document.querySelector('.version').textContent = "Version: " + dateStr + "-" + count;
-    }
-    updateVersion();
-  
-    /* ---------------- 设置模态框处理 ---------------- */
-    function showSettings() {
-      document.getElementById("settingsModal").style.display = "block";
-      updateDevControls();
-    }
-    function closeSettings() {
-      document.getElementById("settingsModal").style.display = "none";
-    }
-    document.getElementById("bgVolume").addEventListener("input", function() {
-      document.getElementById("bgMusic").volume = this.value;
-      document.getElementById("gameMusic").volume = this.value;
-    });
-  
-    /* ---------------- 游戏关卡及逻辑 ---------------- */
-    const imagesPool = [
-      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg',
-      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg',
-      'https://www.cmfish.com/kinds/fish_s/diao.jpg',
-      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg',
-      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg',
-      'https://www.cmfish.com/kinds/fish_s/lion.jpg',
-      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg',
-      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg',
-      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg',
-      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg',
-      'https://www.cmfish.com/kinds/fish_s/hailong.jpg',
-      'https://www.cmfish.com/kinds/fish_s/shark.jpg',
-      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg',
-      'https://www.cmfish.com/kinds/fish_s/leida.jpg',
-      'https://www.cmfish.com/kinds/fish_s/huli.jpg',
-      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg',
-      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg',
-      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg'
-    ];
-    const defaultImage = "https://via.placeholder.com/80?text=?";
-  
-    let currentLevel = 1;
-    const maxLevel = 3;
-    let stepCount = 0;
-    let matchedPairs = 0;
-    let flippedCards = [];
-    let lockBoard = false;
-    let refreshClickCount = 0;
-    let refreshTimer;
-    let dynamicCardSize = 60;
-  
-    let leaderboard = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
-    let unlockedImages = new Set();
-    const imageDescriptions = {
-      'https://www.cmfish.com/kinds/fish_s/xiaochou.jpg': 'A clownfish full of ocean vitality.',
-      'https://www.cmfish.com/kinds/fish_s/xiaochou1.jpg': 'Another clownfish with unique underwater charm.',
-      'https://www.cmfish.com/kinds/fish_s/diao.jpg': 'A mysterious fish with smooth lines and peculiar grace.',
-      'https://www.cmfish.com/kinds/fish_s/shenxian.jpg': 'An exquisite marine creature, almost like a piece of art.',
-      'https://www.cmfish.com/kinds/fish_s/shenxian1.jpg': 'Delicate color matching that highlights unique underwater charm.',
-      'https://www.cmfish.com/kinds/fish_s/lion.jpg': 'A mighty lionfish symbolizing strength and power.',
-      'https://www.cmfish.com/kinds/fish_s/bianfu.jpg': 'A fish with unique patterns that seems to tell underwater secrets.',
-      'https://www.cmfish.com/kinds/fish_s/ziyin.jpg': 'A mysterious purple-toned fish with enchanting charm.',
-      'https://www.cmfish.com/kinds/fish_s/yuemei.jpg': 'An elegant marine spirit, as gentle as moonlight.',
-      'https://www.cmfish.com/kinds/fish_s/seahorse.jpg': 'A delicate seahorse with an unusual shape.',
-      'https://www.cmfish.com/kinds/fish_s/hailong.jpg': 'A majestic sea dragon controlling its domain.',
-      'https://www.cmfish.com/kinds/fish_s/shark.jpg': 'A fierce shark representing the wildness of the ocean.',
-      'https://www.cmfish.com/kinds/fish_s/xiahu2.jpg': 'A small tiger fish with striking patterns.',
-      'https://www.cmfish.com/kinds/fish_s/leida.jpg': 'A fish with a radar-like pattern, exuding mystery and tech vibe.',
-      'https://www.cmfish.com/kinds/fish_s/huli.jpg': 'A sly fish with a cunning look, full of wisdom.',
-      'https://www.cmfish.com/kinds/fish_s/tianzhu.jpg': 'A shimmering fish that seems to harbor otherworldly power.',
-      'https://www.cmfish.com/kinds/fish_s/qingwa.jpg': 'A quirky fish that brings a smile with its unique appearance.',
-      'https://www.cmfish.com/kinds/fish_s/niujiao.jpg': 'A fish with horn-like fins, showcasing wild strength.'
-    };
-  
-    const levelEl = document.getElementById('level');
-    const stepCountEl = document.getElementById('stepCount');
-    const cardGrid = document.getElementById('cardGrid');
-    const winMessage = document.getElementById('winMessage');
-    const finalStepsEl = document.getElementById('finalSteps');
-    const leaderboardList = document.getElementById('leaderboardList');
-  
-    function initLevel() {
-      let cols, rows;
-      if (currentLevel === 1) { cols = 4; rows = 4; levelEl.textContent = "1"; }
-      else if (currentLevel === 2) { cols = 5; rows = 5; levelEl.textContent = "2"; }
-      else { cols = 6; rows = 6; levelEl.textContent = "3"; }
-      stepCount = 0;
-      stepCountEl.textContent = stepCount;
-      matchedPairs = 0;
-      flippedCards = [];
-      lockBoard = true;
-      winMessage.style.display = 'none';
-      cardGrid.innerHTML = '';
-      cardGrid.classList.remove('hidden');
-  
-      if (currentLevel === 1 || currentLevel === 2) {
-        cardGrid.style.width = window.innerWidth + 'px';
-        cardGrid.style.maxWidth = 'none';
-        let gap = 5;
-        dynamicCardSize = (window.innerWidth - (cols - 1) * gap) / cols;
-        cardGrid.style.gridTemplateColumns = `repeat(${cols}, ${dynamicCardSize}px)`;
-      } else {
-        cardGrid.style.width = '90%';
-        cardGrid.style.maxWidth = '500px';
-        cardGrid.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
-      }
-  
-      let totalCells = cols * rows;
-      let pairs = (currentLevel === 2) ? 12 : totalCells / 2;
-      let selected = imagesPool.slice(0, pairs);
-      let cardImages = [...selected, ...selected];
-  
-      if (currentLevel === 2) {
-        shuffleArray(cardImages);
-        let grid = [];
-        let index = 0;
-        for (let i = 0; i < totalCells; i++) {
-          if (i === 12) { grid[i] = null; }
-          else { grid[i] = cardImages[index++]; }
-        }
-        cardImages = grid;
-      } else {
-        cardImages = shuffleArray(cardImages);
-      }
-  
-      cardImages.forEach((imgUrl) => {
-        cardGrid.appendChild(createCard(imgUrl));
-      });
-  
-      if (currentLevel === 3) {
-        lockBoard = false;
-      } else {
-        const allCards = document.querySelectorAll('.card:not(.blank)');
-        allCards.forEach(card => card.classList.add('flipped'));
-        setTimeout(() => {
-          allCards.forEach(card => card.classList.remove('flipped'));
-          lockBoard = false;
-        }, 3000);
-      }
-    }
-  
-    function createCard(imgUrl) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      if (currentLevel === 1 || currentLevel === 2) {
-        card.style.width = dynamicCardSize + 'px';
-        card.style.height = dynamicCardSize + 'px';
-      }
-      if (imgUrl === null) { card.classList.add('blank'); return card; }
-      card.innerHTML = `
-        <div class="card-inner">
-          <div class="card-face card-front"></div>
-          <div class="card-face card-back"></div>
-        </div>
-      `;
-      const front = card.querySelector('.card-front');
-      const imageEl = document.createElement('img');
-      imageEl.src = imgUrl;
-      imageEl.onerror = () => { imageEl.src = defaultImage; };
-      front.appendChild(imageEl);
-      card.addEventListener('click', () => handleCardClick(card, imgUrl));
-      return card;
-    }
-  
-    function handleCardClick(card, imgUrl) {
-      if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
-      card.classList.add('flipped');
-      flippedCards.push({ card, imgUrl });
-      if (flippedCards.length === 2) {
-        lockBoard = true;
-        stepCount++;
-        stepCountEl.textContent = stepCount;
-        setTimeout(checkMatch, 300);
-      }
-    }
-  
-    function checkMatch() {
-      const [first, second] = flippedCards;
-      if (first.imgUrl === second.imgUrl) {
-        first.card.classList.add('matched');
-        second.card.classList.add('matched');
-        matchedPairs++;
-        playMatchSound();
-        unlockedImages.add(first.imgUrl);
-        if (isLevelComplete()) endLevel();
-      } else {
-        first.card.classList.remove('flipped');
-        second.card.classList.remove('flipped');
-      }
-      flippedCards = [];
-      lockBoard = false;
-    }
-  
-    function isLevelComplete() {
-      let total = cardGrid.children.length;
-      let available = (currentLevel === 2) ? total - 1 : total;
-      return matchedPairs === available / 2;
-    }
-  
-    function endLevel() {
-      finalStepsEl.textContent = stepCount;
-      winMessage.style.display = 'block';
-      if (currentLevel === 3) {
-        leaderboard.push({ score: stepCount, nickname: "Anonymous", avatar: "", userId: "stub" });
-        leaderboard.sort((a, b) => a.score - b.score);
-        localStorage.setItem('flipLeaderboard', JSON.stringify(leaderboard));
-        document.getElementById('leaderboard').style.display = 'block';
-        renderLeaderboard();
-        const winButton = document.getElementById('winButton');
-        winButton.textContent = 'Play Again';
-        winButton.onclick = resetGame;
-      } else {
-        document.getElementById('leaderboard').style.display = 'none';
-        const winButton = document.getElementById('winButton');
-        winButton.textContent = 'Next Level';
-        winButton.onclick = nextLevel;
-      }
-      lockBoard = true;
-    }
-  
-    function renderLeaderboard() {
-      leaderboardList.innerHTML = '';
-      leaderboard.forEach((record, idx) => {
-        const li = document.createElement('li');
-        li.textContent = `Rank ${idx + 1}: ${record.nickname} - ${record.score} steps`;
-        leaderboardList.appendChild(li);
-      });
-    }
-  
-    function showLeaderboard() {
-      let stored = JSON.parse(localStorage.getItem('flipLeaderboard')) || [];
-      stored.sort((a, b) => a.score - b.score);
-      const leaderboardFullList = document.getElementById('leaderboardFullList');
-      leaderboardFullList.innerHTML = '';
-      if (stored.length === 0) {
-        leaderboardFullList.innerHTML = '<li>No records</li>';
-      } else {
-        stored.forEach((record, idx) => {
-          let li = document.createElement('li');
-          li.textContent = `Rank ${idx + 1}: ${record.nickname} - ${record.score} steps`;
-          leaderboardFullList.appendChild(li);
-        });
-      }
-      document.getElementById('leaderboardModal').style.display = 'block';
-    }
-  
-    function closeLeaderboard() { document.getElementById('leaderboardModal').style.display = 'none'; }
-    function goHome() { location.reload(); }
-  
-    function refreshImages() {
-      document.querySelectorAll('.card-front img').forEach(img => { img.src = img.src; });
-      refreshClickCount++;
-      clearTimeout(refreshTimer);
-      refreshTimer = setTimeout(() => { refreshClickCount = 0; }, 3000);
-      if (refreshClickCount >= 5) { oneKeyComplete(); refreshClickCount = 0; }
-    }
-  
-    function oneKeyComplete() {
-      document.querySelectorAll('.card:not(.blank)').forEach(card => {
-        card.classList.add('flipped');
-        card.classList.add('matched');
-      });
-      matchedPairs = (currentLevel === 2) ? (cardGrid.children.length - 1) / 2 : cardGrid.children.length / 2;
-      stepCount++;
-      stepCountEl.textContent = stepCount;
-      unlockedImages = new Set();
-      document.querySelectorAll('.card-front img').forEach(img => unlockedImages.add(img.src));
-      endLevel();
-    }
-  
-    function playMatchSound() {
-      const sound = document.getElementById('matchSound');
-      sound.currentTime = 0;
-      sound.play();
-    }
-  
-    function showGallery() {
-      const galleryContent = document.getElementById('galleryContent');
-      galleryContent.innerHTML = '';
-      if (unlockedImages.size === 0) {
-        galleryContent.innerHTML = '<p>No images unlocked</p>';
-      } else {
-        unlockedImages.forEach(imgUrl => {
-          const imgElem = document.createElement('img');
-          imgElem.src = imgUrl;
-          imgElem.style.width = '80px';
-          imgElem.style.height = '80px';
-          imgElem.style.objectFit = 'cover';
-          imgElem.style.cursor = 'pointer';
-          imgElem.onclick = function() { showImageDetail(imgUrl); };
-          galleryContent.appendChild(imgElem);
-        });
-      }
-      document.getElementById('galleryModal').style.display = 'block';
-    }
-  
-    function closeGallery() { document.getElementById('galleryModal').style.display = 'none'; }
-    function showImageDetail(imgUrl) {
-      const description = imageDescriptions[imgUrl] || "A beautiful image showcasing unique marine life.";
-      document.getElementById('imageDetailContent').innerHTML = `
-        <img src="${imgUrl}" style="width:100%; max-width:400px; display:block; margin:0 auto;">
-        <p style="text-align:center; margin-top:10px;">${description}</p>
-      `;
-      document.getElementById('imageDetailModal').style.display = 'block';
-    }
-    function closeImageDetail() { document.getElementById('imageDetailModal').style.display = 'none'; }
-  
-    function showHelp() { document.getElementById('helpModal').style.display = 'block'; }
-    function closeHelp() { document.getElementById('helpModal').style.display = 'none'; }
-  
-    function nextLevel() {
-      currentLevel++;
-      if (currentLevel > maxLevel) currentLevel = maxLevel;
-      winMessage.style.display = 'none';
-      initLevel();
-    }
-    function resetGame() {
-      currentLevel = 1;
-      winMessage.style.display = 'none';
-      initLevel();
-    }
-    function startGame() {
-      // 点击“Start Game”：停止主菜单背景音乐，启动游戏背景音乐，并进入游戏关卡
-      const bgMusic = document.getElementById('bgMusic');
-      bgMusic.pause();
-      const gameMusic = document.getElementById('gameMusic');
-      gameMusic.play().catch(() => {});
-      document.getElementById('mainMenu').style.display = 'none';
-      document.getElementById('gameInfo').style.display = 'block';
-      initLevel();
-    }
-  
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-  
-    /* ---------------- 载入画面处理 ---------------- */
-    window.addEventListener('load', () => {
-      const loadingScreen = document.getElementById('loadingScreen');
-      const loadingVideo = document.querySelector('#loadingScreen video');
-      loadingVideo.addEventListener('canplaythrough', () => {
-        loadingVideo.onended = () => {
-          loadingScreen.style.display = 'none';
-          document.getElementById('mainMenu').style.display = 'flex';
-          const bgMusic = document.getElementById('bgMusic');
-          bgMusic.play().catch(() => {});
-          applyDevSettings();
+    function playBgm() { document.getElementById('bgm').play().catch(()=>{}); }
+
+    /* 圖鑑系統 */
+    function openGallery() {
+      switchScreen('galleryScreen');
+      const grid = document.getElementById('galleryGrid'); grid.innerHTML = '';
+      const collection = JSON.parse(localStorage.getItem('funner_collection') || '{}');
+      for(let i=1; i<=totalFish; i++) {
+        const item = document.createElement('div');
+        const unlocked = collection[i];
+        item.className = `gallery-item ${unlocked ? 'unlocked' : 'locked'}`;
+        item.innerHTML = `<img src="./assets/cards/${i}.jpg">`;
+        item.onclick = () => {
+          if(unlocked) {
+            document.getElementById('infoName').textContent = fishDB[i-1] || `生物 ${i}`;
+            document.getElementById('infoImg').src = `./assets/cards/${i}.jpg`;
+            document.getElementById('infoDate').textContent = unlocked;
+            document.getElementById('infoOverlay').style.display = 'flex';
+          }
         };
+        grid.appendChild(item);
+      }
+    }
+    function unlockGalleryItem(idx) {
+      let col = JSON.parse(localStorage.getItem('funner_collection') || '{}');
+      if(!col[idx]) { col[idx] = new Date().toLocaleDateString(); localStorage.setItem('funner_collection', JSON.stringify(col)); }
+    }
+
+    /* 排行榜系統 */
+    function openLeaderboard() {
+      switchScreen('leaderboardScreen');
+      const list = document.getElementById('rankList');
+      list.innerHTML = `<div class="rank-row rank-header"><span>排名 / 玩家</span><span>步數 / 時間</span></div>`;
+      let recs = JSON.parse(localStorage.getItem('funner_leaderboard') || '[]');
+      if(recs.length === 0) { list.innerHTML += `<div style="text-align:center; padding:20px; color:#666;">暫無紀錄</div>`; return; }
+      recs.forEach((r, idx) => {
+        let c = idx===0?'#ffd700':(idx===1?'#c0c0c0':(idx===2?'#cd7f32':'#fff'));
+        list.innerHTML += `<div class="rank-row"><span style="color:${c}">#${idx+1} ${r.name}</span><span style="font-size:12px; color:#aaa;">${r.steps}步</span></div>`;
       });
-      setTimeout(() => {
-        if (loadingScreen.style.display !== 'none') {
-          loadingScreen.style.display = 'none';
-          document.getElementById('mainMenu').style.display = 'flex';
-          const bgMusic = document.getElementById('bgMusic');
-          bgMusic.play().catch(() => {});
-          applyDevSettings();
-        }
-      }, 10000);
-    });
+    }
+    function saveRank(steps) {
+      let recs = JSON.parse(localStorage.getItem('funner_leaderboard') || '[]');
+      const name = prompt("恭喜通關！請輸入名字紀錄排行：", "Player") || "無名氏";
+      recs.push({ name, steps, time: Date.now() });
+      recs.sort((a,b) => a.steps - b.steps || a.time - b.time);
+      localStorage.setItem('funner_leaderboard', JSON.stringify(recs.slice(0,10)));
+    }
+
+    /* 遊戲核心 */
+    function initLevel() {
+      const grid = document.getElementById('cardGrid'); grid.innerHTML = '';
+      st = 0; matched = 0; flipped = []; lock = false;
+      document.getElementById('stText').textContent = st; document.getElementById('lvText').textContent = lv;
+      let size = (lv===1)?4:(lv===2?5:6);
+      let pairs = (lv===2)?(size*size-1)/2 : size*size/2;
+      let deck = Array.from({length:18},(_,i)=>i+1).sort(()=>0.5-Math.random()).slice(0,pairs);
+      deck = [...deck,...deck].sort(()=>0.5-Math.random());
+      grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+      for(let i=0; i<size*size; i++) {
+        const card = document.createElement('div');
+        if(lv===2 && i===12) { card.className='card center-card'; grid.appendChild(card); continue; }
+        const idx = deck.pop();
+        card.className = 'card';
+        card.innerHTML = `<div class="card-inner"><div class="card-face card-back"></div><div class="card-face card-front"><img src="./assets/cards/${idx}.jpg"></div></div>`;
+        card.onclick = () => {
+          if(lock || card.classList.contains('flipped')) return;
+          card.classList.add('flipped'); flipped.push({card, idx});
+          if(flipped.length===2) {
+            st++; document.getElementById('stText').textContent = st; lock=true;
+            if(flipped[0].idx === flipped[1].idx) {
+              matched++; unlockGalleryItem(flipped[0].idx); flipped=[]; lock=false;
+              if(matched===pairs) setTimeout(showWin, 500);
+            } else { setTimeout(()=>{ flipped.forEach(f=>f.card.classList.remove('flipped')); flipped=[]; lock=false; }, 800); }
+          }
+        };
+        grid.appendChild(card);
+      }
+    }
+    function showWin() {
+      document.getElementById('finalSt').textContent = st; document.getElementById('winOverlay').style.display = 'flex';
+      if(lv===3) saveRank(st);
+    }
+    function nextLevel() {
+      document.getElementById('winOverlay').style.display = 'none';
+      if(lv<3) { lv++; initLevel(); } else { backToMenu(); }
+    }
   </script>
 </body>
 </html>
